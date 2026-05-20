@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Visual Analytics · 基于浏览器的实时眼动追踪系统</title>
+  <meta name="description" content="基于浏览器的实时眼动追踪工具，无需专业设备，利用摄像头即可进行眼动数据采集、热力图与视线轨迹分析。" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- 背景装饰 -->
+<div class="bg-orb bg-orb-1"></div>
+<div class="bg-orb bg-orb-2"></div>
+<div class="bg-orb bg-orb-3"></div>
+
+<!-- ========== 隐私弹窗 ========== -->
+<div id="privacy-modal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-icon">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+        <circle cx="24" cy="24" r="24" fill="rgba(167,139,250,0.15)"/>
+        <path d="M24 12C18 12 13 15 13 15V25C13 32 18 37 24 38C30 37 35 32 35 25V15C35 15 30 12 24 12Z" stroke="#A78BFA" stroke-width="2" fill="none"/>
+        <path d="M20 24L23 27L28 21" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h2 class="modal-title">隐私说明</h2>
+    <p class="modal-desc">本工具需要访问您的摄像头以进行实时眼动追踪。请放心：</p>
+    <ul class="modal-list">
+      <li>
+        <span class="list-icon">🔒</span>
+        <span>所有数据仅在您的浏览器本地处理</span>
+      </li>
+      <li>
+        <span class="list-icon">🚫</span>
+        <span>摄像头画面不会上传至任何服务器</span>
+      </li>
+      <li>
+        <span class="list-icon">🎛️</span>
+        <span>您可随时关闭摄像头或撤销权限</span>
+      </li>
+      <li>
+        <span class="list-icon">🌐</span>
+        <span>完全离线运行，保护您的隐私</span>
+      </li>
+    </ul>
+    <button class="btn btn-primary btn-full" id="accept-privacy">
+      我已了解，启用摄像头
+    </button>
+    <p class="modal-note">点击后浏览器将请求摄像头访问权限</p>
+  </div>
+</div>
+
+<!-- ========== 初始化加载遮罩 ========== -->
+<div id="loading-overlay" class="modal-overlay">
+  <div class="modal-card" style="text-align:center">
+    <div class="loading-spinner"></div>
+    <h2 class="modal-title" style="margin-top:20px">正在初始化眼动追踪引擎</h2>
+    <p class="modal-desc" id="loading-status">正在加载 WebGazer.js 并请求摄像头权限…</p>
+  </div>
+</div>
+
+<!-- ========== 错误弹窗 ========== -->
+<div id="error-modal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-icon">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+        <circle cx="24" cy="24" r="24" fill="rgba(248,113,113,0.15)"/>
+        <path d="M24 14v12" stroke="#F87171" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="24" cy="32" r="2" fill="#F87171"/>
+      </svg>
+    </div>
+    <h2 class="modal-title">眼动追踪初始化失败</h2>
+    <p class="modal-desc" id="error-message">无法启动眼动追踪引擎。</p>
+    <ul class="modal-list">
+      <li>
+        <span class="list-icon">📷</span>
+        <span>请确认已允许浏览器访问摄像头</span>
+      </li>
+      <li>
+        <span class="list-icon">🌐</span>
+        <span>请使用 Chrome / Edge 等现代浏览器</span>
+      </li>
+      <li>
+        <span class="list-icon">🔒</span>
+        <span>页面需通过 HTTPS 或 localhost 访问</span>
+      </li>
+      <li>
+        <span class="list-icon">💡</span>
+        <span>请确保环境光线充足、面部正对摄像头</span>
+      </li>
+    </ul>
+    <button class="btn btn-primary btn-full" id="retry-init-btn">重试初始化</button>
+    <p class="modal-note" id="error-detail"></p>
+  </div>
+</div>
+
+<!-- ========== 校准界面 ========== -->
+<div id="calibration-screen" class="screen hidden">
+  <div id="calibration-header">
+    <div class="calib-progress-wrap">
+      <div class="calib-progress-label">
+        <span id="calib-status-text">校准进行中</span>
+        <span id="calib-progress-pct">0%</span>
+      </div>
+      <div class="calib-progress-bar">
+        <div class="calib-progress-fill" id="calib-progress-fill"></div>
+      </div>
+    </div>
+    <p class="calib-hint">请注视当前圆点，点击它或按 Space / Enter / 0 共 3 次，直到它变为绿色</p>
+  </div>
+
+  <!-- 9个校准点 -->
+  <div id="calibration-points-container">
+    <!-- 点通过 JS 动态生成 -->
+  </div>
+
+  <!-- 实时视线光标 -->
+  <div id="gaze-cursor" class="hidden"></div>
+</div>
+
+<!-- ========== 追踪界面 ========== -->
+<div id="tracking-screen" class="screen hidden">
+  <canvas id="tracking-canvas"></canvas>
+  <div id="tracking-image-container">
+    <img id="tracking-image" src="" alt="追踪图像" />
+  </div>
+  <div id="gaze-cursor-tracking" class="gaze-cursor-tracking"></div>
+  <div id="tracking-banner">
+    <div class="tracking-dot"></div>
+    <span>眼动追踪进行中...</span>
+  </div>
+  <button id="stop-tracking-btn" title="结束追踪">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M15 5L5 15M5 5L15 15" stroke="white" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </button>
+</div>
+
+<!-- ========== 分析报告界面 ========== -->
+<div id="report-screen" class="screen hidden">
+  <div class="report-header">
+    <div class="report-header-left">
+      <h1 class="report-title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        分析报告
+      </h1>
+    </div>
+    <div class="report-header-actions">
+      <button class="btn btn-ghost" id="import-archive-btn">
+        导入存档
+      </button>
+      <input type="file" id="import-archive-input" accept="application/json,.json" class="hidden" />
+      <button class="btn btn-ghost" id="export-archive-btn">
+        导出存档
+      </button>
+      <button class="btn btn-ghost" id="export-selected-data-btn">
+        导出单次数据
+      </button>
+      <button class="btn btn-ghost" id="export-data-btn">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M8 2v8M5 7l3 3 3-3M3 13h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        导出全部数据
+      </button>
+      <button class="btn btn-ghost" id="export-pdf-btn">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M4 2h6l3 3v9H4V2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M9 2v3h3M6 8h4M6 11h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        导出 PDF
+      </button>
+      <button class="btn btn-primary" id="back-home-btn">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        返回首页
+      </button>
+    </div>
+  </div>
+
+  <div class="data-workbench">
+    <div class="data-panel">
+      <div class="data-panel-head">
+        <span>参与者</span>
+        <strong id="participant-count">0</strong>
+      </div>
+      <div id="participant-list" class="participant-list"></div>
+    </div>
+    <div class="data-panel">
+      <div class="data-panel-head">
+        <span>追踪记录</span>
+        <strong id="run-count">0</strong>
+      </div>
+      <div id="run-list" class="run-list"></div>
+    </div>
+    <div class="data-panel data-panel-wide">
+      <div class="data-panel-head">
+        <span>当前回顾</span>
+        <strong id="selected-run-label">未选择</strong>
+      </div>
+      <p class="data-panel-note" id="selected-run-note">导入存档或完成追踪后，可在这里选择并回顾单次数据。</p>
+    </div>
+  </div>
+
+  <div class="report-stats">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-purple">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <circle cx="10" cy="10" r="7" stroke="#A78BFA" stroke-width="1.5"/>
+          <path d="M10 6v4l2.5 2.5" stroke="#A78BFA" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">追踪总时长</span>
+        <span class="stat-value" id="stat-duration">0.0 s</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-blue">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <circle cx="10" cy="10" r="3" stroke="#60A5FA" stroke-width="1.5"/>
+          <path d="M10 3v2M10 15v2M3 10h2M15 10h2" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">数据点总数</span>
+        <span class="stat-value" id="stat-points">0</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-green">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M16 8A6 6 0 114 8" stroke="#34D399" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M10 2v1M7 3.27L7.5 4.1M13 3.27L12.5 4.1" stroke="#34D399" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">关注质量</span>
+        <span class="stat-value stat-quality" id="stat-quality">—</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-orange">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M3 10h2l2-5 3 10 3-6 1 3h3" stroke="#FB923C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">采样频率</span>
+        <span class="stat-value" id="stat-fps">— Hz</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="report-viz">
+    <div class="viz-tabs">
+      <button class="viz-tab active" id="tab-heatmap">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="8" cy="8" r="3" fill="currentColor" opacity="0.4"/>
+          <circle cx="8" cy="8" r="1.5" fill="currentColor"/>
+        </svg>
+        热力图
+      </button>
+      <button class="viz-tab" id="tab-gazeplot">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="3" cy="13" r="2" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="8" cy="5" r="2" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="13" cy="10" r="2" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M5 5.5L3 11M8.5 6.5L11.5 9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        视线轨迹图
+      </button>
+    </div>
+    <div class="viz-container">
+      <canvas id="report-canvas"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 主页 ========== -->
+<div id="home-screen" class="screen">
+  <header class="site-header">
+    <div class="logo">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+        <circle cx="16" cy="16" r="16" fill="rgba(167,139,250,0.15)"/>
+        <ellipse cx="16" cy="16" rx="10" ry="6" stroke="#A78BFA" stroke-width="1.5"/>
+        <circle cx="16" cy="16" r="3" fill="#A78BFA"/>
+        <circle cx="16.5" cy="15.5" r="1" fill="white"/>
+      </svg>
+      <span>Visual Analytics</span>
+    </div>
+    <div class="header-actions">
+      <div class="header-badge">基于浏览器 · 本地处理 · 隐私保护</div>
+    </div>
+  </header>
+
+  <main class="home-main">
+    <div class="hero-section">
+      <div class="hero-tag">
+        <span class="tag-dot"></span>
+        实时眼动追踪系统
+      </div>
+      <h1 class="hero-title">
+        探索视觉注意力的<br />
+        <span class="gradient-text">数字轨迹</span>
+      </h1>
+      <p class="hero-desc">
+        无需专用设备，仅需一个摄像头，即可完成专业级的眼动追踪实验。
+        采用 WebGazer.js 驱动，支持热力图与视线轨迹双重可视化分析。
+      </p>
+    </div>
+
+    <div class="home-cards">
+      <!-- 步骤1：校准 -->
+      <div class="home-card" id="card-calibrate">
+        <div class="card-number">1</div>
+        <div class="card-icon-wrap calibrate-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="16" r="12" stroke="#A78BFA" stroke-width="1.5" stroke-dasharray="4 2"/>
+            <circle cx="16" cy="16" r="4" stroke="#A78BFA" stroke-width="1.5"/>
+            <path d="M16 4v4M16 24v4M4 16h4M24 16h4" stroke="#A78BFA" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="card-content">
+          <h3 class="card-title">摄像头校准</h3>
+          <p class="card-desc">
+            完成 9 点校准流程，系统将学习您的眼睛特征，提供精准的视线位置预测。
+            每个校准点可点击 3 次，也可按 Space、Enter 或 0 键确认。
+          </p>
+          <label class="participant-field" for="participant-id-input">
+            <span>参与者 ID</span>
+            <input id="participant-id-input" type="text" maxlength="48" placeholder="例如 P001" autocomplete="off" />
+          </label>
+          <div class="card-info-row">
+            <span class="info-chip">3×3 网格</span>
+            <span class="info-chip">每点 3 次点击</span>
+            <span class="info-chip">约 1 分钟</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div id="calib-status-indicator" class="status-indicator status-pending">
+            <span class="status-dot"></span>
+            <span id="calib-status-label">未校准</span>
+          </div>
+          <button class="btn btn-primary" id="start-calib-btn">开始校准</button>
+        </div>
+      </div>
+
+      <!-- 步骤2：上传与追踪 -->
+      <div class="home-card" id="card-track">
+        <div class="card-number">2</div>
+        <div class="card-icon-wrap track-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <rect x="4" y="6" width="24" height="18" rx="2" stroke="#60A5FA" stroke-width="1.5"/>
+            <path d="M14 14l-4 6h12l-4-5-2 3-2-4z" stroke="#60A5FA" stroke-width="1.2" stroke-linejoin="round"/>
+            <circle cx="21" cy="11" r="2" stroke="#60A5FA" stroke-width="1.2"/>
+          </svg>
+        </div>
+        <div class="card-content">
+          <h3 class="card-title">上传图像并追踪</h3>
+          <p class="card-desc">
+            上传您想要分析的图像，系统将在您阅读时实时记录眼动数据，生成热力图和视线轨迹。
+          </p>
+
+          <!-- 拖拽上传区域 -->
+          <div class="dropzone" id="dropzone">
+            <div class="dropzone-inner" id="dropzone-inner">
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                <path d="M18 6v16M12 14l6-8 6 8" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M6 26h24" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <span class="dropzone-text">拖拽图片至此，或点击选择</span>
+              <span class="dropzone-sub">支持 PNG、JPG、WEBP · 单张最大 10MB · 最多 5 张</span>
+            </div>
+            <input type="file" id="file-input" accept="image/*" multiple class="hidden" />
+          </div>
+          <div id="image-gallery" class="image-gallery hidden" aria-label="已上传图片"></div>
+          <div class="card-info-row">
+            <span class="info-chip">实时视线光标</span>
+            <span class="info-chip">热力图分析</span>
+            <span class="info-chip">轨迹图</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div id="track-status-indicator" class="status-indicator status-pending">
+            <span class="status-dot"></span>
+            <span>请先完成校准</span>
+          </div>
+          <button class="btn btn-secondary" id="start-track-btn" disabled>开始追踪</button>
+        </div>
+      </div>
+
+      <!-- 步骤3：数据回顾与存档 -->
+      <div class="home-card" id="card-data">
+        <div class="card-number">3</div>
+        <div class="card-icon-wrap data-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <path d="M7 8h18M7 14h18M7 20h10" stroke="#34D399" stroke-width="1.6" stroke-linecap="round"/>
+            <circle cx="23" cy="22" r="4" stroke="#34D399" stroke-width="1.6"/>
+            <path d="M25.8 24.8L28 27" stroke="#34D399" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="card-content">
+          <h3 class="card-title">数据回顾与存档</h3>
+          <p class="card-desc">
+            回顾参与者的所有图片追踪记录，查看热力图与轨迹图，导出单次数据、全部数据或完整存档。
+          </p>
+          <div class="data-card-summary">
+            <div>
+              <span>参与者</span>
+              <strong id="home-participant-count">0</strong>
+            </div>
+            <div>
+              <span>追踪记录</span>
+              <strong id="home-run-count">0</strong>
+            </div>
+          </div>
+          <div class="card-info-row">
+            <span class="info-chip">单次导出</span>
+            <span class="info-chip">全部导出</span>
+            <span class="info-chip">存档导入</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="status-indicator status-active">
+            <span class="status-dot"></span>
+            <span>无需摄像头即可回顾</span>
+          </div>
+          <div class="card-actions">
+            <button class="btn btn-ghost" id="import-archive-home-btn">导入存档</button>
+            <button class="btn btn-primary" id="open-data-btn">打开回顾</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 功能特点 -->
+    <div class="features-section">
+      <h2 class="features-title">核心特性</h2>
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="feature-icon">🎯</div>
+          <h4>9点精准校准</h4>
+          <p>3×3网格布局，覆盖屏幕全范围，每点三次点击确保模型精度</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🔥</div>
+          <h4>热力图可视化</h4>
+          <p>基于 Canvas API 实现的高性能热力图，清晰展示注意力密度分布</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📍</div>
+          <h4>视线轨迹分析</h4>
+          <p>带时序编号的注视点和眼跳路径，完整还原用户的阅读扫描模式</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🔒</div>
+          <h4>隐私优先设计</h4>
+          <p>所有数据本地处理，摄像头内容永不离开您的设备</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">⚡</div>
+          <h4>实时视线反馈</h4>
+          <p>校准过程中实时显示视线光标，直观了解追踪状态与效果</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📊</div>
+          <h4>数据导出支持</h4>
+          <p>支持导出 JSON/CSV 格式数据和 PDF 分析报告，便于后续研究</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>Visual Analytics · 基于浏览器的实时眼动追踪系统 · 本地处理，保护隐私</p>
+  </footer>
+</div>
+
+<!-- WebGazer.js (本地) -->
+<script src="webgazer.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
