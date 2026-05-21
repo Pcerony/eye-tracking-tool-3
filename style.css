@@ -669,6 +669,136 @@ body {
 }
 
 /* ===========================
+   Camera Adjustment Screen
+=========================== */
+#camera-adjust-screen {
+  position: fixed;
+  inset: 0;
+  background: #111827;
+  z-index: 500;
+  color: white;
+  overflow: auto;
+}
+
+.camera-adjust-shell {
+  min-height: 100vh;
+  width: min(1120px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 28px 0;
+  display: grid;
+  grid-template-rows: auto minmax(320px, 1fr) auto;
+  gap: 18px;
+}
+
+.camera-adjust-header,
+.camera-adjust-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.camera-adjust-kicker {
+  color: #93C5FD;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.camera-adjust-header h2 {
+  font-size: clamp(24px, 3vw, 36px);
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+
+#camera-adjust-status {
+  max-width: 360px;
+  color: #D1D5DB;
+  font-size: 14px;
+  line-height: 1.6;
+  text-align: right;
+}
+
+.camera-preview-wrap {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255,255,255,0.18);
+  background: #030712;
+  min-height: 320px;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.32);
+}
+
+#camera-adjust-video {
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  display: block;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+.camera-guide {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.face-guide {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(42vw, 360px);
+  height: min(56vw, 470px);
+  transform: translate(-50%, -50%);
+  border: 2px solid rgba(255,255,255,0.42);
+  border-radius: 50%;
+}
+
+.eye-guide {
+  position: absolute;
+  top: 43%;
+  width: min(15vw, 128px);
+  height: 56px;
+  border: 2px solid rgba(52,211,153,0.9);
+  border-radius: 999px;
+  box-shadow: 0 0 18px rgba(52,211,153,0.18);
+}
+
+.eye-guide-left {
+  left: calc(50% - min(16vw, 150px));
+  transform: translate(-50%, -50%);
+}
+
+.eye-guide-right {
+  left: calc(50% + min(16vw, 150px));
+  transform: translate(-50%, -50%);
+}
+
+@media (max-width: 720px) {
+  .camera-adjust-shell {
+    width: calc(100% - 24px);
+    padding: 18px 0;
+  }
+
+  .camera-adjust-header,
+  .camera-adjust-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  #camera-adjust-status {
+    max-width: none;
+    text-align: left;
+  }
+
+  .camera-adjust-footer .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ===========================
    Calibration Screen
 =========================== */
 #calibration-screen {

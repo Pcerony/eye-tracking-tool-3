@@ -95,6 +95,33 @@
   </div>
 </div>
 
+<!-- ========== 摄像头调整界面 ========== -->
+<div id="camera-adjust-screen" class="screen hidden">
+  <div class="camera-adjust-shell">
+    <header class="camera-adjust-header">
+      <div>
+        <p class="camera-adjust-kicker">校准前检查</p>
+        <h2>调整摄像头至眼部位置</h2>
+      </div>
+      <p id="camera-adjust-status">正在读取摄像头画面…</p>
+    </header>
+
+    <div class="camera-preview-wrap">
+      <video id="camera-adjust-video" autoplay muted playsinline></video>
+      <div class="camera-guide" aria-hidden="true">
+        <div class="eye-guide eye-guide-left"></div>
+        <div class="eye-guide eye-guide-right"></div>
+        <div class="face-guide"></div>
+      </div>
+    </div>
+
+    <div class="camera-adjust-footer">
+      <button class="btn btn-ghost" id="camera-adjust-back-btn">返回首页</button>
+      <button class="btn btn-primary" id="camera-adjust-continue-btn">进入九点校准</button>
+    </div>
+  </div>
+</div>
+
 <!-- ========== 校准界面 ========== -->
 <div id="calibration-screen" class="screen hidden">
   <div id="calibration-header">
@@ -328,7 +355,7 @@
         <div class="card-content">
           <h3 class="card-title">摄像头校准</h3>
           <p class="card-desc">
-            完成 9 点校准流程，系统将学习您的眼睛特征，提供精准的视线位置预测。
+            先通过摄像头预览调整眼部位置，再完成 9 点校准流程，系统将学习您的眼睛特征，提供精准的视线位置预测。
             每个校准点可点击 3 次，也可按 Space、Enter 或 0 键确认。
           </p>
           <label class="participant-field" for="participant-id-input">
@@ -336,9 +363,9 @@
             <input id="participant-id-input" type="text" maxlength="48" placeholder="例如 P001" autocomplete="off" />
           </label>
           <div class="card-info-row">
+            <span class="info-chip">摄像头预览</span>
             <span class="info-chip">3×3 网格</span>
             <span class="info-chip">每点 3 次点击</span>
-            <span class="info-chip">约 1 分钟</span>
           </div>
         </div>
         <div class="card-footer">

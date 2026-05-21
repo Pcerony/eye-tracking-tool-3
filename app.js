@@ -44,9 +44,16 @@ const EL = {
 
   // 屏幕
   homeScreen:      $('home-screen'),
+  cameraAdjustScreen: $('camera-adjust-screen'),
   calibScreen:     $('calibration-screen'),
   trackingScreen:  $('tracking-screen'),
   reportScreen:    $('report-screen'),
+
+  // 摄像头调整
+  cameraAdjustVideo: $('camera-adjust-video'),
+  cameraAdjustStatus: $('camera-adjust-status'),
+  cameraAdjustContinueBtn: $('camera-adjust-continue-btn'),
+  cameraAdjustBackBtn: $('camera-adjust-back-btn'),
 
   // 校准
   calibPointsContainer: $('calibration-points-container'),
@@ -116,7 +123,7 @@ function hideModal(el)  { el.classList.remove('active'); }
 
 // ─── 屏幕切换 ──────────────────────────────────────────────────
 function showScreen(screenEl) {
-  [EL.homeScreen, EL.calibScreen, EL.trackingScreen, EL.reportScreen]
+  [EL.homeScreen, EL.cameraAdjustScreen, EL.calibScreen, EL.trackingScreen, EL.reportScreen]
     .forEach(el => el && el.classList.add('hidden'));
   if (screenEl) screenEl.classList.remove('hidden');
 }
@@ -351,6 +358,32 @@ function hideWebGazerElements() {
       z-index: -999 !important;
     `;
   });
+}
+
+function stopCameraAdjustmentPreview() {
+  if (!EL.cameraAdjustVideo) return;
+  EL.cameraAdjustVideo.pause();
+  EL.cameraAdjustVideo.srcObject = null;
+}
+
+function syncCameraAdjustmentPreview() {
+  const sourceVideo = document.getElementById('webgazerVideoFeed');
+  const stream = sourceVideo && sourceVideo.srcObject;
+
+  if (!stream) {
+    EL.cameraAdjustStatus.textContent = '摄像头画面尚未就绪，请稍候…';
+    return false;
+  }
+
+  if (EL.cameraAdjustVideo.srcObject !== stream) {
+    EL.cameraAdjustVideo.srcObject = stream;
+  }
+
+  EL.cameraAdjustVideo.play().catch(() => {
+    EL.cameraAdjustStatus.textContent = '请点击预览区域或继续按钮以激活摄像头画面';
+  });
+  EL.cameraAdjustStatus.textContent = '请让双眼位于画面中央，并保持面部清晰可见';
+  return true;
 }
 
 // ─── 更新视线光标位置 ──────────────────────────────────────────
@@ -763,10 +796,20 @@ async function startCalibrationFromHome() {
     if (!ready) return;
   }
 
-  beginCalibrationScreen();
+  beginCameraAdjustmentScreen();
+}
+
+function beginCameraAdjustmentScreen() {
+  try { webgazer.resume(); } catch (_) {}
+  EL.gazeCursor.classList.add('hidden');
+  showScreen(EL.cameraAdjustScreen);
+  syncCameraAdjustmentPreview();
+  setTimeout(syncCameraAdjustmentPreview, 300);
+  setTimeout(syncCameraAdjustmentPreview, 1000);
 }
 
 function beginCalibrationScreen() {
+  stopCameraAdjustmentPreview();
   try { webgazer.resume(); } catch (_) {}
   showScreen(EL.calibScreen);
   buildCalibrationPoints();
@@ -1303,7 +1346,7 @@ function bindEvents() {
     const ready = await initWebGazer();
     if (ready && State.pendingCalibrationStart) {
       State.pendingCalibrationStart = false;
-      beginCalibrationScreen();
+      beginCameraAdjustmentScreen();
     }
   });
 
@@ -1315,13 +1358,18 @@ function bindEvents() {
     initWebGazer().then(ready => {
       if (ready && State.pendingCalibrationStart) {
         State.pendingCalibrationStart = false;
-        beginCalibrationScreen();
+        beginCameraAdjustmentScreen();
       }
     });
   });
 
   // 校准
   EL.startCalibBtn.addEventListener('click', startCalibrationFromHome);
+  EL.cameraAdjustContinueBtn.addEventListener('click', beginCalibrationScreen);
+  EL.cameraAdjustBackBtn.addEventListener('click', () => {
+    stopCameraAdjustmentPreview();
+    showScreen(EL.homeScreen);
+  });
 
   // 开始追踪
   EL.startTrackBtn.addEventListener('click', () => {
