@@ -14,43 +14,6 @@
 <div class="bg-orb bg-orb-2"></div>
 <div class="bg-orb bg-orb-3"></div>
 
-<!-- ========== 隐私弹窗 ========== -->
-<div id="privacy-modal" class="modal-overlay">
-  <div class="modal-card">
-    <div class="modal-icon">
-      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-        <circle cx="24" cy="24" r="24" fill="rgba(167,139,250,0.15)"/>
-        <path d="M24 12C18 12 13 15 13 15V25C13 32 18 37 24 38C30 37 35 32 35 25V15C35 15 30 12 24 12Z" stroke="#A78BFA" stroke-width="2" fill="none"/>
-        <path d="M20 24L23 27L28 21" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
-    <h2 class="modal-title">隐私说明</h2>
-    <p class="modal-desc">本工具需要访问您的摄像头以进行实时眼动追踪。请放心：</p>
-    <ul class="modal-list">
-      <li>
-        <span class="list-icon">🔒</span>
-        <span>所有数据仅在您的浏览器本地处理</span>
-      </li>
-      <li>
-        <span class="list-icon">🚫</span>
-        <span>摄像头画面不会上传至任何服务器</span>
-      </li>
-      <li>
-        <span class="list-icon">🎛️</span>
-        <span>您可随时关闭摄像头或撤销权限</span>
-      </li>
-      <li>
-        <span class="list-icon">🌐</span>
-        <span>完全离线运行，保护您的隐私</span>
-      </li>
-    </ul>
-    <button class="btn btn-primary btn-full" id="accept-privacy">
-      我已了解，启用摄像头
-    </button>
-    <p class="modal-note">点击后浏览器将请求摄像头访问权限</p>
-  </div>
-</div>
-
 <!-- ========== 初始化加载遮罩 ========== -->
 <div id="loading-overlay" class="modal-overlay">
   <div class="modal-card" style="text-align:center">
@@ -95,6 +58,38 @@
   </div>
 </div>
 
+<!-- ========== 摄像头选择界面 ========== -->
+<div id="camera-select-screen" class="screen hidden">
+  <div class="camera-select-shell">
+    <header class="camera-select-header">
+      <div>
+        <p class="camera-select-kicker">摄像头选择</p>
+        <h2>选择用于眼动追踪的摄像头</h2>
+      </div>
+      <p id="camera-select-status">正在读取摄像头列表…</p>
+    </header>
+
+    <div class="camera-select-layout">
+      <section class="camera-select-panel">
+        <label class="camera-device-field" for="camera-device-select">
+          <span>视频输入设备</span>
+          <select id="camera-device-select"></select>
+        </label>
+        <button class="btn btn-secondary" id="camera-refresh-btn">刷新列表</button>
+      </section>
+
+      <div class="camera-select-preview">
+        <video id="camera-select-video" autoplay muted playsinline></video>
+      </div>
+    </div>
+
+    <div class="camera-select-footer">
+      <button class="btn btn-ghost" id="camera-select-back-btn">返回首页</button>
+      <button class="btn btn-primary" id="camera-select-continue-btn">使用此摄像头</button>
+    </div>
+  </div>
+</div>
+
 <!-- ========== 摄像头调整界面 ========== -->
 <div id="camera-adjust-screen" class="screen hidden">
   <div class="camera-adjust-shell">
@@ -134,7 +129,12 @@
         <div class="calib-progress-fill" id="calib-progress-fill"></div>
       </div>
     </div>
-    <p class="calib-hint">请注视当前圆点，点击它或按 Space / Enter / 0 共 3 次，直到它变为绿色</p>
+    <p class="calib-hint">参与者注视打印横版 A4 校准纸上的当前编号点；操作员按 Space / Enter / 0，或单击鼠标左键确认当前点 3 次</p>
+  </div>
+
+  <div id="calibration-paper-frame" class="a4-paper-frame">
+    <div class="a4-paper-title">横版 A4 纸面校准映射</div>
+    <div class="a4-paper-grid" aria-hidden="true"></div>
   </div>
 
   <!-- 9个校准点 -->
@@ -149,13 +149,21 @@
 <!-- ========== 追踪界面 ========== -->
 <div id="tracking-screen" class="screen hidden">
   <canvas id="tracking-canvas"></canvas>
-  <div id="tracking-image-container">
-    <img id="tracking-image" src="" alt="追踪图像" />
+  <div id="tracking-operator-panel">
+    <div class="tracking-copy">
+      <span class="tracking-mode">横版 A4 纸面追踪</span>
+      <strong>请让参与者观看打印出来的横版 A4 标识</strong>
+      <span>屏幕仅用于操作员监看。系统会把视线估计映射到这张 A4 纸面坐标，再叠加到报告图像上。</span>
+    </div>
+    <div id="tracking-paper-plane" class="a4-paper-frame tracking-paper-plane">
+      <img id="tracking-image" src="" alt="追踪图像参考" />
+      <div class="a4-paper-grid" aria-hidden="true"></div>
+    </div>
   </div>
   <div id="gaze-cursor-tracking" class="gaze-cursor-tracking"></div>
   <div id="tracking-banner">
     <div class="tracking-dot"></div>
-    <span>眼动追踪进行中...</span>
+    <span>正在记录 A4 纸面视线坐标...</span>
   </div>
   <button id="stop-tracking-btn" title="结束追踪">
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -175,29 +183,9 @@
         分析报告
       </h1>
     </div>
-    <div class="report-header-actions">
-      <button class="btn btn-ghost" id="import-archive-btn">
-        导入存档
-      </button>
-      <input type="file" id="import-archive-input" accept="application/json,.json" class="hidden" />
-      <button class="btn btn-ghost" id="export-archive-btn">
+    <div class="report-header-actions report-primary-actions">
+      <button class="btn btn-archive" id="export-archive-btn">
         导出存档
-      </button>
-      <button class="btn btn-ghost" id="export-selected-data-btn">
-        导出单次数据
-      </button>
-      <button class="btn btn-ghost" id="export-data-btn">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M8 2v8M5 7l3 3 3-3M3 13h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        导出全部数据
-      </button>
-      <button class="btn btn-ghost" id="export-pdf-btn">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M4 2h6l3 3v9H4V2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-          <path d="M9 2v3h3M6 8h4M6 11h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-        导出 PDF
       </button>
       <button class="btn btn-primary" id="back-home-btn">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -241,7 +229,7 @@
         </svg>
       </div>
       <div class="stat-info">
-        <span class="stat-label">追踪总时长</span>
+        <span class="stat-label">当前时段</span>
         <span class="stat-value" id="stat-duration">0.0 s</span>
       </div>
     </div>
@@ -253,7 +241,7 @@
         </svg>
       </div>
       <div class="stat-info">
-        <span class="stat-label">数据点总数</span>
+        <span class="stat-label">当前点数</span>
         <span class="stat-value" id="stat-points">0</span>
       </div>
     </div>
@@ -302,9 +290,56 @@
         视线轨迹图
       </button>
     </div>
+    <div class="viz-controls">
+      <div class="viz-control-group">
+        <label class="viz-check">
+          <input type="checkbox" id="viz-background-toggle" checked />
+          <span>叠加背景图</span>
+        </label>
+      </div>
+      <div class="viz-control-group viz-time-group">
+        <label>
+          <span>开始</span>
+          <input id="viz-time-start" type="number" min="0" step="0.1" value="0" />
+        </label>
+        <label>
+          <span>结束</span>
+          <input id="viz-time-end" type="number" min="0" step="0.1" placeholder="全部" />
+        </label>
+        <button class="btn btn-ghost" id="viz-time-reset-btn">重置</button>
+      </div>
+      <div class="viz-control-group">
+        <span id="viz-range-status">显示全部数据</span>
+        <button class="btn btn-secondary" id="gaze-playback-btn" disabled>模拟回放</button>
+        <button class="btn btn-primary" id="export-viz-layer-btn">导出透明图层</button>
+      </div>
+    </div>
     <div class="viz-container">
       <canvas id="report-canvas"></canvas>
     </div>
+  </div>
+
+  <div class="report-footer-actions">
+    <input type="file" id="import-archive-input" accept="application/json,.json" class="hidden" />
+    <button class="btn btn-ghost" id="import-archive-btn">
+      导入存档
+    </button>
+    <button class="btn btn-ghost" id="export-selected-data-btn">
+      导出单次数据
+    </button>
+    <button class="btn btn-ghost" id="export-data-btn">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M8 2v8M5 7l3 3 3-3M3 13h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      导出全部数据
+    </button>
+    <button class="btn btn-ghost" id="export-pdf-btn">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M4 2h6l3 3v9H4V2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M9 2v3h3M6 8h4M6 11h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      导出 PDF
+    </button>
   </div>
 </div>
 
@@ -336,7 +371,7 @@
         <span class="gradient-text">数字轨迹</span>
       </h1>
       <p class="hero-desc">
-        无需专用设备，仅需一个摄像头，即可完成专业级的眼动追踪实验。
+        面向打印横版 A4 标识的眼动追踪实验：参与者观看纸面内容，系统用摄像头记录并映射纸面视线坐标。
         采用 WebGazer.js 驱动，支持热力图与视线轨迹双重可视化分析。
       </p>
     </div>
@@ -355,17 +390,17 @@
         <div class="card-content">
           <h3 class="card-title">摄像头校准</h3>
           <p class="card-desc">
-            先通过摄像头预览调整眼部位置，再完成 9 点校准流程，系统将学习您的眼睛特征，提供精准的视线位置预测。
-            每个校准点可点击 3 次，也可按 Space、Enter 或 0 键确认。
+            先选择用于眼动追踪的摄像头，再通过预览调整眼部位置，并让参与者依次注视打印横版 A4 校准纸上的 9 个点。
+            操作员按 Space、Enter、0 或单击鼠标左键确认当前点，每点 3 次。
           </p>
           <label class="participant-field" for="participant-id-input">
-            <span>参与者 ID</span>
-            <input id="participant-id-input" type="text" maxlength="48" placeholder="例如 P001" autocomplete="off" />
+            <span>参与者姓名</span>
+            <input id="participant-id-input" type="text" maxlength="48" placeholder="请输入参与者姓名" autocomplete="name" required />
           </label>
           <div class="card-info-row">
+            <span class="info-chip">摄像头选择</span>
             <span class="info-chip">摄像头预览</span>
-            <span class="info-chip">3×3 网格</span>
-            <span class="info-chip">每点 3 次点击</span>
+            <span class="info-chip">横版A4映射</span>
           </div>
         </div>
         <div class="card-footer">
@@ -377,7 +412,7 @@
         </div>
       </div>
 
-      <!-- 步骤2：上传与追踪 -->
+      <!-- 步骤2：选择内置图片并追踪 -->
       <div class="home-card" id="card-track">
         <div class="card-number">2</div>
         <div class="card-icon-wrap track-icon">
@@ -388,28 +423,16 @@
           </svg>
         </div>
         <div class="card-content">
-          <h3 class="card-title">上传图像并追踪</h3>
+          <h3 class="card-title">选择内置图片并追踪</h3>
           <p class="card-desc">
-            上传您想要分析的图像，系统将在您阅读时实时记录眼动数据，生成热力图和视线轨迹。
+            从 a1、a2、b1、b2 四张内置横版 A4 标识中选择。a1/a2 为对照类，b1/b2 为实验类。
           </p>
 
-          <!-- 拖拽上传区域 -->
-          <div class="dropzone" id="dropzone">
-            <div class="dropzone-inner" id="dropzone-inner">
-              <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-                <path d="M18 6v16M12 14l6-8 6 8" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M6 26h24" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round"/>
-              </svg>
-              <span class="dropzone-text">拖拽图片至此，或点击选择</span>
-              <span class="dropzone-sub">支持 PNG、JPG、WEBP · 单张最大 10MB · 最多 5 张</span>
-            </div>
-            <input type="file" id="file-input" accept="image/*" multiple class="hidden" />
-          </div>
-          <div id="image-gallery" class="image-gallery hidden" aria-label="已上传图片"></div>
+          <div id="image-gallery" class="image-gallery" aria-label="内置图片选择"></div>
           <div class="card-info-row">
+            <span class="info-chip">对照类 a1/a2</span>
+            <span class="info-chip">实验类 b1/b2</span>
             <span class="info-chip">实时视线光标</span>
-            <span class="info-chip">热力图分析</span>
-            <span class="info-chip">轨迹图</span>
           </div>
         </div>
         <div class="card-footer">
@@ -438,8 +461,8 @@
           </p>
           <div class="data-card-summary">
             <div>
-              <span>参与者</span>
-              <strong id="home-participant-count">0</strong>
+              <span>当前参与者</span>
+              <strong id="home-participant-count">未选择</strong>
             </div>
             <div>
               <span>追踪记录</span>
@@ -465,42 +488,6 @@
       </div>
     </div>
 
-    <!-- 功能特点 -->
-    <div class="features-section">
-      <h2 class="features-title">核心特性</h2>
-      <div class="features-grid">
-        <div class="feature-item">
-          <div class="feature-icon">🎯</div>
-          <h4>9点精准校准</h4>
-          <p>3×3网格布局，覆盖屏幕全范围，每点三次点击确保模型精度</p>
-        </div>
-        <div class="feature-item">
-          <div class="feature-icon">🔥</div>
-          <h4>热力图可视化</h4>
-          <p>基于 Canvas API 实现的高性能热力图，清晰展示注意力密度分布</p>
-        </div>
-        <div class="feature-item">
-          <div class="feature-icon">📍</div>
-          <h4>视线轨迹分析</h4>
-          <p>带时序编号的注视点和眼跳路径，完整还原用户的阅读扫描模式</p>
-        </div>
-        <div class="feature-item">
-          <div class="feature-icon">🔒</div>
-          <h4>隐私优先设计</h4>
-          <p>所有数据本地处理，摄像头内容永不离开您的设备</p>
-        </div>
-        <div class="feature-item">
-          <div class="feature-icon">⚡</div>
-          <h4>实时视线反馈</h4>
-          <p>校准过程中实时显示视线光标，直观了解追踪状态与效果</p>
-        </div>
-        <div class="feature-item">
-          <div class="feature-icon">📊</div>
-          <h4>数据导出支持</h4>
-          <p>支持导出 JSON/CSV 格式数据和 PDF 分析报告，便于后续研究</p>
-        </div>
-      </div>
-    </div>
   </main>
 
   <footer class="site-footer">
