@@ -38,6 +38,8 @@ const State = {
   gazePlaybackStartedAt: 0,
   gazePlaybackDurationMs: 0,
   gazePlaybackToken: 0,
+  cameraSelectContinuing: false,
+  calibrationScreenStarting: false,
   archiveDirty: false,
   archiveUnloadPrompted: false,
 };
@@ -639,6 +641,14 @@ function isCalibrationScreenActive() {
   return EL.calibScreen && !EL.calibScreen.classList.contains('hidden');
 }
 
+function isCameraSelectScreenActive() {
+  return EL.cameraSelectScreen && !EL.cameraSelectScreen.classList.contains('hidden');
+}
+
+function isCameraAdjustScreenActive() {
+  return EL.cameraAdjustScreen && !EL.cameraAdjustScreen.classList.contains('hidden');
+}
+
 function disableWebGazerMouseCalibration() {
   if (typeof webgazer === 'undefined') return;
 
@@ -934,6 +944,25 @@ function handleCalibrationKeydown(event) {
   confirmCurrentCalibrationPoint();
 }
 
+function handlePreCalibrationStepKeydown(event) {
+  if (event.repeat) return;
+  if (event.key !== ' ' && event.code !== 'Space') return;
+  if (event.target.matches('input, textarea, select, button, a')) return;
+
+  if (isCameraSelectScreenActive()) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    handleCameraSelectContinue();
+    return;
+  }
+
+  if (isCameraAdjustScreenActive()) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    beginCalibrationScreen();
+  }
+}
+
 function updateCalibProgress() {
   const total = CALIB_POSITIONS.length * CLICKS_PER_POINT;
   const done  = State.calibPoints.reduce((s, p) => s + Math.min(p.clicks, CLICKS_PER_POINT), 0);
@@ -1041,17 +1070,23 @@ async function handleCameraDeviceChange() {
 }
 
 async function handleCameraSelectContinue() {
+  if (State.cameraSelectContinuing) return;
   State.selectedCameraDeviceId = EL.cameraDeviceSelect.value;
   if (!State.selectedCameraDeviceId) {
     alert('请先选择一个摄像头。');
     return;
   }
 
-  stopCameraSelectPreview();
-  showModal(EL.loadingOverlay);
-  EL.loadingStatus.textContent = '正在启用所选摄像头…';
-  const ready = await initWebGazer();
-  if (ready) beginCameraAdjustmentScreen();
+  State.cameraSelectContinuing = true;
+  try {
+    stopCameraSelectPreview();
+    showModal(EL.loadingOverlay);
+    EL.loadingStatus.textContent = '正在启用所选摄像头…';
+    const ready = await initWebGazer();
+    if (ready) beginCameraAdjustmentScreen();
+  } finally {
+    State.cameraSelectContinuing = false;
+  }
 }
 
 function beginCameraAdjustmentScreen() {
@@ -1064,16 +1099,22 @@ function beginCameraAdjustmentScreen() {
 }
 
 async function beginCalibrationScreen() {
-  stopCameraAdjustmentPreview();
-  try { webgazer.resume(); } catch (_) {}
-  disableWebGazerMouseCalibration();
-  showScreen(EL.calibScreen);
-  EL.calibStatusText.textContent = '正在重置旧校准数据…';
-  await resetWebGazerCalibrationData();
-  EL.calibStatusText.textContent = '校准进行中';
-  buildCalibrationPoints();
-  EL.gazeCursor.classList.remove('hidden');
-  disableWebGazerMouseCalibration();
+  if (State.calibrationScreenStarting) return;
+  State.calibrationScreenStarting = true;
+  try {
+    stopCameraAdjustmentPreview();
+    try { webgazer.resume(); } catch (_) {}
+    disableWebGazerMouseCalibration();
+    showScreen(EL.calibScreen);
+    EL.calibStatusText.textContent = '正在重置旧校准数据…';
+    await resetWebGazerCalibrationData();
+    EL.calibStatusText.textContent = '校准进行中';
+    buildCalibrationPoints();
+    EL.gazeCursor.classList.remove('hidden');
+    disableWebGazerMouseCalibration();
+  } finally {
+    State.calibrationScreenStarting = false;
+  }
 }
 
 function setTrackStatus(cls, text) {
@@ -2114,6 +2155,7 @@ function bindEvents() {
   EL.stopTrackingBtn.addEventListener('click', stopTracking);
 
   // 校准页键盘确认：Space / Enter / 0
+  document.addEventListener('keydown', handlePreCalibrationStepKeydown);
   document.addEventListener('keydown', handleCalibrationKeydown);
   // 校准页鼠标左键确认当前活动点，不读取鼠标位置。
   document.addEventListener('click', handleCalibrationMouseConfirm, true);
