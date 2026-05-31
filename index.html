@@ -3,16 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Visual Analytics · 基于浏览器的实时眼动追踪系统</title>
-  <meta name="description" content="基于浏览器的实时眼动追踪工具，无需专业设备，利用摄像头即可进行眼动数据采集、热力图与视线轨迹分析。" />
+  <title>SIGN Visual Attention v3 · 基于浏览器的实时眼动追踪系统</title>
+  <meta name="description" content="SIGN Visual Attention v3 是面向标识视觉注意力研究的浏览器眼动追踪与分析工具。" />
+  <link rel="icon" type="image/png" href="logo.png" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-<!-- 背景装饰 -->
-<div class="bg-orb bg-orb-1"></div>
-<div class="bg-orb bg-orb-2"></div>
-<div class="bg-orb bg-orb-3"></div>
 
 <!-- ========== 初始化加载遮罩 ========== -->
 <div id="loading-overlay" class="modal-overlay">
@@ -129,11 +125,11 @@
         <div class="calib-progress-fill" id="calib-progress-fill"></div>
       </div>
     </div>
-    <p class="calib-hint">参与者注视打印横版 A4 校准纸上的当前编号点；操作员按 Space / Enter / 0，或单击鼠标左键确认当前点 3 次</p>
+    <p class="calib-hint">参与者注视打印校准纸上的当前编号点；操作员按 Space / Enter / 0，或单击鼠标左键确认当前点 3 次</p>
   </div>
 
   <div id="calibration-paper-frame" class="a4-paper-frame">
-    <div class="a4-paper-title">横版 A4 纸面校准映射</div>
+    <div class="a4-paper-title">打印标识校准映射</div>
     <div class="a4-paper-grid" aria-hidden="true"></div>
   </div>
 
@@ -151,9 +147,9 @@
   <canvas id="tracking-canvas"></canvas>
   <div id="tracking-operator-panel">
     <div class="tracking-copy">
-      <span class="tracking-mode">横版 A4 纸面追踪</span>
-      <strong>请让参与者观看打印出来的横版 A4 标识</strong>
-      <span>屏幕仅用于操作员监看。系统会把视线估计映射到这张 A4 纸面坐标，再叠加到报告图像上。</span>
+      <span class="tracking-mode">打印标识追踪</span>
+      <strong>请让参与者观看打印出来的标识</strong>
+      <span>屏幕仅用于操作员监看。系统会把视线估计映射到打印标识坐标，再叠加到报告图像上。</span>
     </div>
     <div id="tracking-paper-plane" class="a4-paper-frame tracking-paper-plane">
       <img id="tracking-image" src="" alt="追踪图像参考" />
@@ -163,7 +159,7 @@
   <div id="gaze-cursor-tracking" class="gaze-cursor-tracking"></div>
   <div id="tracking-banner">
     <div class="tracking-dot"></div>
-    <span>正在记录 A4 纸面视线坐标...</span>
+    <span>正在记录打印标识视线坐标...</span>
   </div>
   <button id="stop-tracking-btn" title="结束追踪">
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -178,7 +174,7 @@
     <div class="report-header-left">
       <h1 class="report-title">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         分析报告
       </h1>
@@ -194,6 +190,11 @@
         返回首页
       </button>
     </div>
+  </div>
+
+  <div class="report-mode-tabs" role="tablist" aria-label="分析页面切换">
+    <button class="report-mode-tab active" id="single-analysis-tab" type="button">单个数据分析</button>
+    <button class="report-mode-tab" id="overall-analysis-tab" type="button">整体数据分析</button>
   </div>
 
   <div class="data-workbench">
@@ -224,8 +225,8 @@
     <div class="stat-card">
       <div class="stat-icon stat-icon-purple">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <circle cx="10" cy="10" r="7" stroke="#A78BFA" stroke-width="1.5"/>
-          <path d="M10 6v4l2.5 2.5" stroke="#A78BFA" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M10 6v4l2.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
       </div>
       <div class="stat-info">
@@ -236,8 +237,8 @@
     <div class="stat-card">
       <div class="stat-icon stat-icon-blue">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <circle cx="10" cy="10" r="3" stroke="#60A5FA" stroke-width="1.5"/>
-          <path d="M10 3v2M10 15v2M3 10h2M15 10h2" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M10 3v2M10 15v2M3 10h2M15 10h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
       </div>
       <div class="stat-info">
@@ -248,8 +249,8 @@
     <div class="stat-card">
       <div class="stat-icon stat-icon-green">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M16 8A6 6 0 114 8" stroke="#34D399" stroke-width="1.5" stroke-linecap="round"/>
-          <path d="M10 2v1M7 3.27L7.5 4.1M13 3.27L12.5 4.1" stroke="#34D399" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M16 8A6 6 0 114 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M10 2v1M7 3.27L7.5 4.1M13 3.27L12.5 4.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
       </div>
       <div class="stat-info">
@@ -260,7 +261,7 @@
     <div class="stat-card">
       <div class="stat-icon stat-icon-orange">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M3 10h2l2-5 3 10 3-6 1 3h3" stroke="#FB923C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M3 10h2l2-5 3 10 3-6 1 3h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
       <div class="stat-info">
@@ -269,6 +270,122 @@
       </div>
     </div>
   </div>
+
+  <section class="analysis-dashboard" aria-label="聚合数据分析">
+    <div class="analysis-head">
+      <div>
+        <h2>聚合分析</h2>
+        <p id="analysis-scope-note">当前没有可分析的数据。</p>
+      </div>
+      <div class="analysis-controls">
+        <label>
+          <span>范围</span>
+          <select id="analysis-scope-select">
+            <option value="all">全部数据</option>
+            <option value="session">当前参与者</option>
+            <option value="run">当前记录</option>
+          </select>
+        </label>
+        <label>
+          <span>图片</span>
+          <select id="analysis-image-select">
+            <option value="all">全部图片</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <div class="analysis-summary-grid" id="analysis-summary-grid"></div>
+
+    <div class="analysis-layout">
+      <div class="analysis-panel">
+        <div class="analysis-panel-head">
+          <span>条件对比</span>
+          <strong id="analysis-condition-count">0</strong>
+        </div>
+        <div class="analysis-table-wrap">
+          <table class="analysis-table">
+            <thead>
+              <tr>
+                <th>条件</th>
+                <th>记录</th>
+                <th>点数</th>
+                <th>有效率</th>
+                <th>平均时长</th>
+                <th>中心偏移</th>
+              </tr>
+            </thead>
+            <tbody id="analysis-condition-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="analysis-panel">
+        <div class="analysis-panel-head">
+          <span>图片对比</span>
+          <strong id="analysis-image-count">0</strong>
+        </div>
+        <div class="analysis-table-wrap">
+          <table class="analysis-table">
+            <thead>
+              <tr>
+                <th>图片</th>
+                <th>条件</th>
+                <th>记录</th>
+                <th>有效率</th>
+                <th>平均 X/Y</th>
+                <th>路径长度</th>
+              </tr>
+            </thead>
+            <tbody id="analysis-image-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="analysis-panel analysis-panel-zone">
+        <div class="analysis-panel-head">
+          <span>打印区域分布</span>
+          <strong id="analysis-zone-total">0 点</strong>
+        </div>
+        <div class="analysis-zone-grid" id="analysis-zone-grid"></div>
+      </div>
+
+      <div class="analysis-panel analysis-panel-anomaly">
+        <div class="analysis-panel-head">
+          <span>异常筛查</span>
+          <strong id="analysis-anomaly-count">0</strong>
+        </div>
+        <div class="analysis-table-wrap">
+          <table class="analysis-table analysis-anomaly-table">
+            <thead>
+              <tr>
+                <th>记录</th>
+                <th>技术异常</th>
+                <th>覆盖</th>
+                <th>偏移</th>
+                <th>建议</th>
+              </tr>
+            </thead>
+            <tbody id="analysis-anomaly-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="analysis-panel analysis-panel-insights">
+        <div class="analysis-panel-head">
+          <span>自动摘要</span>
+          <strong id="analysis-insight-count">0</strong>
+        </div>
+        <ul id="analysis-insights" class="analysis-insights"></ul>
+      </div>
+    </div>
+
+    <div class="analysis-actions">
+      <button class="btn btn-ghost" id="export-analysis-csv-btn">导出分析 CSV</button>
+      <button class="btn btn-ghost" id="export-analysis-json-btn">导出分析 JSON</button>
+      <button class="btn btn-primary" id="export-analysis-figure-btn">导出整体分析图</button>
+    </div>
+  </section>
 
   <div class="report-viz">
     <div class="viz-tabs">
@@ -310,19 +427,59 @@
       </div>
       <div class="viz-control-group">
         <span id="viz-range-status">显示全部数据</span>
+        <label>
+          <span>坐标修正</span>
+          <select id="viz-correction-mode">
+            <option value="raw">原始</option>
+            <option value="shift">中心平移</option>
+            <option value="stretch">范围拉伸</option>
+            <option value="manual">手动修正</option>
+            <option value="auto">自动</option>
+          </select>
+        </label>
         <button class="btn btn-secondary" id="gaze-playback-btn" disabled>模拟回放</button>
         <button class="btn btn-primary" id="export-viz-layer-btn">导出透明图层</button>
+        <button class="btn btn-primary" id="export-academic-figure-btn">导出学术图片</button>
+      </div>
+    </div>
+    <div class="manual-correction-panel hidden" id="manual-correction-panel">
+      <div class="manual-correction-group">
+        <label>
+          <span>工具</span>
+          <select id="manual-correction-tool">
+            <option value="transform">移动/变换</option>
+            <option value="erase">涂抹异常点</option>
+            <option value="restore">恢复涂抹点</option>
+          </select>
+        </label>
+        <label>
+          <span>涂抹半径</span>
+          <input id="manual-brush-radius" type="range" min="1" max="12" step="1" value="4" />
+        </label>
+      </div>
+      <div class="manual-correction-readout">
+        <span id="manual-transform-status">偏移 0 / 0 · 缩放 1.00 / 1.00</span>
+        <span id="manual-excluded-status">已涂抹 0 点</span>
+      </div>
+      <div class="manual-correction-actions">
+        <button class="btn btn-ghost" id="manual-reset-btn">重置手动修正</button>
+        <button class="btn btn-primary" id="save-corrected-version-btn">另存为修正版</button>
       </div>
     </div>
     <div class="viz-container">
       <canvas id="report-canvas"></canvas>
+      <canvas id="manual-correction-canvas" class="manual-correction-canvas hidden"></canvas>
     </div>
   </div>
 
   <div class="report-footer-actions">
-    <input type="file" id="import-archive-input" accept="application/json,.json" class="hidden" />
+    <input type="file" id="import-archive-input" accept="application/json,.json" class="hidden" multiple />
+    <input type="file" id="import-archive-folder-input" accept="application/json,.json" class="hidden" webkitdirectory directory multiple />
     <button class="btn btn-ghost" id="import-archive-btn">
-      导入存档
+      导入存档文件
+    </button>
+    <button class="btn btn-ghost" id="import-archive-folder-btn">
+      导入 data523 文件夹
     </button>
     <button class="btn btn-ghost" id="export-selected-data-btn">
       导出单次数据
@@ -347,15 +504,18 @@
 <div id="home-screen" class="screen">
   <header class="site-header">
     <div class="logo">
-      <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-        <circle cx="16" cy="16" r="16" fill="rgba(167,139,250,0.15)"/>
-        <ellipse cx="16" cy="16" rx="10" ry="6" stroke="#A78BFA" stroke-width="1.5"/>
-        <circle cx="16" cy="16" r="3" fill="#A78BFA"/>
-        <circle cx="16.5" cy="15.5" r="1" fill="white"/>
-      </svg>
-      <span>Visual Analytics</span>
+      <img src="logo.png" alt="SIGN Visual Attention v3 logo" />
+      <span>SIGN Visual Attention v3</span>
     </div>
     <div class="header-actions">
+      <div class="language-switcher" aria-label="Language selector">
+        <label for="language-select">Language</label>
+        <select id="language-select">
+          <option value="zh-CN">中文</option>
+          <option value="en">English</option>
+          <option value="ja">日本語</option>
+        </select>
+      </div>
       <div class="header-badge">基于浏览器 · 本地处理 · 隐私保护</div>
     </div>
   </header>
@@ -367,11 +527,11 @@
         实时眼动追踪系统
       </div>
       <h1 class="hero-title">
-        探索视觉注意力的<br />
-        <span class="gradient-text">数字轨迹</span>
+        利用视觉追踪技术<br />
+        <span class="gradient-text">了解标识的注意力分布</span>
       </h1>
       <p class="hero-desc">
-        面向打印横版 A4 标识的眼动追踪实验：参与者观看纸面内容，系统用摄像头记录并映射纸面视线坐标。
+        面向通用打印标识的眼动追踪实验：参与者观看纸面内容，系统用摄像头记录并映射打印标识视线坐标。
         采用 WebGazer.js 驱动，支持热力图与视线轨迹双重可视化分析。
       </p>
     </div>
@@ -382,15 +542,15 @@
         <div class="card-number">1</div>
         <div class="card-icon-wrap calibrate-icon">
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <circle cx="16" cy="16" r="12" stroke="#A78BFA" stroke-width="1.5" stroke-dasharray="4 2"/>
-            <circle cx="16" cy="16" r="4" stroke="#A78BFA" stroke-width="1.5"/>
-            <path d="M16 4v4M16 24v4M4 16h4M24 16h4" stroke="#A78BFA" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="16" cy="16" r="12" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 2"/>
+            <circle cx="16" cy="16" r="4" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M16 4v4M16 24v4M4 16h4M24 16h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
         </div>
         <div class="card-content">
           <h3 class="card-title">摄像头校准</h3>
           <p class="card-desc">
-            先选择用于眼动追踪的摄像头，再通过预览调整眼部位置，并让参与者依次注视打印横版 A4 校准纸上的 9 个点。
+            先选择用于眼动追踪的摄像头，再通过预览调整眼部位置，并让参与者依次注视打印校准纸上的 9 个点。
             操作员按 Space、Enter、0 或单击鼠标左键确认当前点，每点 3 次。
           </p>
           <label class="participant-field" for="participant-id-input">
@@ -398,9 +558,9 @@
             <input id="participant-id-input" type="text" maxlength="48" placeholder="请输入参与者姓名" autocomplete="name" required />
           </label>
           <div class="card-info-row">
-            <span class="info-chip">摄像头选择</span>
+            <span class="info-chip">流畅摄像头选择</span>
             <span class="info-chip">摄像头预览</span>
-            <span class="info-chip">横版A4映射</span>
+            <span class="info-chip">通用打印映射</span>
           </div>
         </div>
         <div class="card-footer">
@@ -412,26 +572,28 @@
         </div>
       </div>
 
-      <!-- 步骤2：选择内置图片并追踪 -->
+      <!-- 步骤2：选择图片并追踪 -->
       <div class="home-card" id="card-track">
         <div class="card-number">2</div>
         <div class="card-icon-wrap track-icon">
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <rect x="4" y="6" width="24" height="18" rx="2" stroke="#60A5FA" stroke-width="1.5"/>
-            <path d="M14 14l-4 6h12l-4-5-2 3-2-4z" stroke="#60A5FA" stroke-width="1.2" stroke-linejoin="round"/>
-            <circle cx="21" cy="11" r="2" stroke="#60A5FA" stroke-width="1.2"/>
+            <rect x="4" y="6" width="24" height="18" rx="2" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M14 14l-4 6h12l-4-5-2 3-2-4z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+            <circle cx="21" cy="11" r="2" stroke="currentColor" stroke-width="1.2"/>
           </svg>
         </div>
         <div class="card-content">
-          <h3 class="card-title">选择内置图片并追踪</h3>
+          <h3 class="card-title">选择图片并追踪</h3>
           <p class="card-desc">
-            从 a1、a2、b1、b2 四张内置横版 A4 标识中选择。a1/a2 为对照类，b1/b2 为实验类。
+            从 a1、a2、b1、b2 四张内置标识中选择，或载入外部图片。a1/b1 为对照组，a2/b2 为实验组。
           </p>
 
-          <div id="image-gallery" class="image-gallery" aria-label="内置图片选择"></div>
+          <input id="external-image-input" type="file" accept="image/*" class="hidden" />
+          <button class="btn btn-ghost btn-full" id="external-image-btn" type="button">载入外部图片</button>
+          <div id="image-gallery" class="image-gallery" aria-label="图片选择"></div>
           <div class="card-info-row">
-            <span class="info-chip">对照类 a1/a2</span>
-            <span class="info-chip">实验类 b1/b2</span>
+            <span class="info-chip">对照组 a1/b1</span>
+            <span class="info-chip">实验组 a2/b2</span>
             <span class="info-chip">实时视线光标</span>
           </div>
         </div>
@@ -449,9 +611,9 @@
         <div class="card-number">3</div>
         <div class="card-icon-wrap data-icon">
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <path d="M7 8h18M7 14h18M7 20h10" stroke="#34D399" stroke-width="1.6" stroke-linecap="round"/>
-            <circle cx="23" cy="22" r="4" stroke="#34D399" stroke-width="1.6"/>
-            <path d="M25.8 24.8L28 27" stroke="#34D399" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M7 8h18M7 14h18M7 20h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <circle cx="23" cy="22" r="4" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M25.8 24.8L28 27" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
           </svg>
         </div>
         <div class="card-content">
@@ -491,7 +653,7 @@
   </main>
 
   <footer class="site-footer">
-    <p>Visual Analytics · 基于浏览器的实时眼动追踪系统 · 本地处理，保护隐私</p>
+    <p>SIGN Visual Attention v3 · 基于浏览器的实时眼动追踪系统 · 本地处理，保护隐私</p>
   </footer>
 </div>
 

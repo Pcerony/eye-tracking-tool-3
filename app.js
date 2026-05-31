@@ -6,8 +6,730 @@
 
 'use strict';
 
+// ─── 多语言支持 ────────────────────────────────────────────────
+const LANGUAGE_STORAGE_KEY = 'signVisualAttentionLanguage';
+const SUPPORTED_LANGUAGES = new Set(['zh-CN', 'en', 'ja']);
+const I18N_TEXT = {
+  en: {
+    '语言': 'Language',
+    'SIGN Visual Attention v3 是面向标识视觉注意力研究的浏览器眼动追踪与分析工具。': 'SIGN Visual Attention v3 is a browser-based eye-tracking and analysis tool for sign-oriented visual attention research.',
+    '基于浏览器的实时眼动追踪工具，无需专业设备，利用摄像头即可进行眼动数据采集、热力图与视线轨迹分析。': 'A browser-based real-time eye-tracking tool that uses a camera for gaze data collection, heatmaps, and gaze-trajectory analysis without specialized hardware.',
+    'SIGN Visual Attention v3 · 基于浏览器的实时眼动追踪系统': 'SIGN Visual Attention v3 · Browser-Based Real-Time Eye-Tracking System',
+    '正在初始化眼动追踪引擎': 'Initializing eye-tracking engine',
+    '正在加载 WebGazer.js 并请求摄像头权限…': 'Loading WebGazer.js and requesting camera permission...',
+    '眼动追踪初始化失败': 'Eye-tracking initialization failed',
+    '无法启动眼动追踪引擎。': 'Unable to start the eye-tracking engine.',
+    '请确认已允许浏览器访问摄像头': 'Confirm that camera access is allowed in the browser.',
+    '请使用 Chrome / Edge 等现代浏览器': 'Use a modern browser such as Chrome or Edge.',
+    '页面需通过 HTTPS 或 localhost 访问': 'Open this page through HTTPS or localhost.',
+    '请确保环境光线充足、面部正对摄像头': 'Keep the face centered and the lighting sufficient.',
+    '重试初始化': 'Retry Initialization',
+    '摄像头选择': 'Camera Selection',
+    '流畅摄像头选择': 'Smooth Camera Selection',
+    '选择用于眼动追踪的摄像头': 'Select the camera for eye tracking',
+    '正在读取摄像头列表…': 'Reading camera list...',
+    '视频输入设备': 'Video Input Device',
+    '刷新列表': 'Refresh List',
+    '返回首页': 'Back Home',
+    '使用此摄像头（Space）': 'Use This Camera (Space)',
+    '校准前检查': 'Pre-Calibration Check',
+    '调整摄像头至眼部位置': 'Align the camera to eye level',
+    '正在读取摄像头画面…': 'Reading camera preview...',
+    '进入九点校准（Space）': 'Start 9-Point Calibration (Space)',
+    '校准进行中': 'Calibration in progress',
+    '参与者注视打印校准纸上的当前编号点；操作员按 Space / Enter / 0，或单击鼠标左键确认当前点 3 次': 'The participant looks at the numbered point on the printed calibration sheet; the operator presses Space / Enter / 0 or left-clicks to confirm each point 3 times.',
+    '打印标识校准映射': 'Printed Sign Calibration Map',
+    '打印标识追踪': 'Printed Sign Tracking',
+    '请让参与者观看打印出来的标识': 'Ask the participant to view the printed sign.',
+    '屏幕仅用于操作员监看。系统会把视线估计映射到打印标识坐标，再叠加到报告图像上。': 'The screen is for operator monitoring only. Gaze estimates are mapped to printed-sign coordinates and overlaid on the report image.',
+    '正在记录打印标识视线坐标...': 'Recording printed-sign gaze coordinates...',
+    '结束追踪': 'Stop Tracking',
+    '分析页面切换': 'Analysis page switcher',
+    '聚合数据分析': 'Aggregate Data Analysis',
+    '内置图片选择': 'Built-in image selection',
+    '图片选择': 'Image selection',
+    '请输入参与者姓名': 'Enter participant name',
+    '分析报告': 'Analysis Report',
+    '导出存档': 'Export Archive',
+    '单个数据分析': 'Single-Run Analysis',
+    '整体数据分析': 'Overall Analysis',
+    '参与者': 'Participants',
+    '追踪记录': 'Tracking Records',
+    '当前回顾': 'Current Review',
+    '未选择': 'Not selected',
+    '导入存档或完成追踪后，可在这里选择并回顾单次数据。': 'After importing an archive or completing tracking, select and review each run here.',
+    '当前时段': 'Current Interval',
+    '当前点数': 'Current Points',
+    '关注质量': 'Attention Quality',
+    '采样频率': 'Sampling Frequency',
+    '聚合分析': 'Aggregate Analysis',
+    '当前没有可分析的数据。': 'No analyzable data is currently available.',
+    '范围': 'Scope',
+    '全部数据': 'All Data',
+    '当前参与者': 'Current Participant',
+    '当前记录': 'Current Record',
+    '图片': 'Image',
+    '全部图片': 'All Images',
+    '条件对比': 'Condition Comparison',
+    '条件': 'Condition',
+    '记录': 'Records',
+    '点数': 'Points',
+    '有效率': 'Valid Rate',
+    '平均时长': 'Mean Duration',
+    '中心偏移': 'Center Bias',
+    '图片对比': 'Image Comparison',
+    '平均 X/Y': 'Mean X/Y',
+    '路径长度': 'Path Length',
+    '打印区域分布': 'Printed Region Distribution',
+    '异常筛查': 'Anomaly Screening',
+    '技术异常': 'Technical Anomaly',
+    '覆盖': 'Coverage',
+    '偏移': 'Bias',
+    '建议': 'Suggestion',
+    '自动摘要': 'Automated Summary',
+    '导出分析 CSV': 'Export Analysis CSV',
+    '导出分析 JSON': 'Export Analysis JSON',
+    '导出整体分析图': 'Export Overall Figure',
+    '热力图': 'Heatmap',
+    '视线轨迹图': 'Gaze Plot',
+    '叠加背景图': 'Overlay Background',
+    '开始': 'Start',
+    '结束': 'End',
+    '重置': 'Reset',
+    '显示全部数据': 'Show all data',
+    '坐标修正': 'Coordinate Correction',
+    '原始': 'Raw',
+    '中心平移': 'Center Shift',
+    '范围拉伸': 'Range Stretch',
+    '手动修正': 'Manual Correction',
+    '自动': 'Auto',
+    '模拟回放': 'Replay',
+    '停止回放': 'Stop Replay',
+    '导出透明图层': 'Export Transparent Layer',
+    '导出学术图片': 'Export Academic Figure',
+    '工具': 'Tool',
+    '移动/变换': 'Move / Transform',
+    '涂抹异常点': 'Brush Outliers',
+    '恢复涂抹点': 'Restore Brushed Points',
+    '涂抹半径': 'Brush Radius',
+    '偏移 0 / 0 · 缩放 1.00 / 1.00': 'Offset 0 / 0 · Scale 1.00 / 1.00',
+    '已涂抹 0 点': 'Brushed 0 points',
+    '重置手动修正': 'Reset Manual Correction',
+    '另存为修正版': 'Save as Corrected Version',
+    '导入存档文件': 'Import Archive File',
+    '导入 data523 文件夹': 'Import data523 Folder',
+    '导出单次数据': 'Export Selected Run',
+    '导出全部数据': 'Export All Data',
+    '导出 PDF': 'Export PDF',
+    '基于浏览器 · 本地处理 · 隐私保护': 'Browser-based · Local processing · Privacy preserving',
+    '实时眼动追踪系统': 'Real-Time Eye-Tracking System',
+    '利用视觉追踪技术': 'Use Visual Tracking Technology',
+    '了解标识的注意力分布': 'Understand Sign Attention Distribution',
+    '面向通用打印标识的眼动追踪实验：参与者观看纸面内容，系统用摄像头记录并映射打印标识视线坐标。 采用 WebGazer.js 驱动，支持热力图与视线轨迹双重可视化分析。': 'An eye-tracking experiment for general printed signs: participants view printed content while the system records and maps gaze coordinates through the camera. Powered by WebGazer.js, with both heatmap and gaze-trajectory analysis.',
+    '摄像头校准': 'Camera Calibration',
+    '先选择用于眼动追踪的摄像头，再通过预览调整眼部位置，并让参与者依次注视打印校准纸上的 9 个点。 操作员按 Space、Enter、0 或单击鼠标左键确认当前点，每点 3 次。': 'Select the tracking camera, align eye position in the preview, then ask the participant to look at the 9 points on the printed calibration sheet. The operator confirms each point 3 times with Space, Enter, 0, or a left click.',
+    '参与者姓名': 'Participant Name',
+    '摄像头预览': 'Camera Preview',
+    '通用打印映射': 'General Print Mapping',
+    '未校准': 'Not Calibrated',
+    '开始校准': 'Start Calibration',
+    '选择图片并追踪': 'Select Image and Track',
+    '从 a1、a2、b1、b2 四张内置标识中选择，或载入外部图片。a1/b1 为对照组，a2/b2 为实验组。': 'Choose one of the four built-in signs, a1, a2, b1, and b2, or load an external image. a1/b1 are control stimuli; a2/b2 are experimental stimuli.',
+    '载入外部图片': 'Load External Image',
+    '外部图片': 'External Image',
+    '对照组 a1/b1': 'Control a1/b1',
+    '实验组 a2/b2': 'Experimental a2/b2',
+    '实时视线光标': 'Live Gaze Cursor',
+    '请先完成校准': 'Complete calibration first',
+    '开始追踪': 'Start Tracking',
+    '数据回顾与存档': 'Data Review and Archive',
+    '回顾参与者的所有图片追踪记录，查看热力图与轨迹图，导出单次数据、全部数据或完整存档。': 'Review all image-tracking records, inspect heatmaps and gaze plots, and export selected runs, all data, or the complete archive.',
+    '单次导出': 'Selected Export',
+    '全部导出': 'Full Export',
+    '存档导入': 'Archive Import',
+    '无需摄像头即可回顾': 'Review without camera',
+    '导入存档': 'Import Archive',
+    '打开回顾': 'Open Review',
+    'SIGN Visual Attention v3 · 基于浏览器的实时眼动追踪系统 · 本地处理，保护隐私': 'SIGN Visual Attention v3 · Browser-Based Real-Time Eye-Tracking System · Local processing, privacy preserving',
+    '还没有参与者数据。可先完成追踪，或导入参与者存档。': 'No participant data yet. Complete tracking or import a participant archive.',
+    '请选择参与者。': 'Select a participant.',
+    '该参与者还没有完成任何图片追踪。': 'This participant has not completed any image tracking yet.',
+    '完成一次图片追踪后，记录会出现在这里。': 'After an image-tracking run is completed, the record will appear here.',
+    '未知时间': 'Unknown time',
+    '摄像头已关闭，请重新校准后开始追踪': 'The camera is closed. Recalibrate before tracking.',
+    '请选择图像并重新校准': 'Select an image and recalibrate.',
+    '选择摄像头并校准': 'Select Camera and Calibrate',
+    '所选摄像头': 'Selected camera',
+    '您的浏览器不支持摄像头选择': 'Your browser does not support camera selection.',
+    '正在请求摄像头权限…': 'Requesting camera permission...',
+    '未检测到可用摄像头': 'No available camera detected',
+    '无法读取摄像头列表': 'Unable to read the camera list',
+    '无法预览所选摄像头': 'Unable to preview the selected camera',
+    '摄像头访问失败': 'Camera access failed',
+    '您拒绝了摄像头权限。请在浏览器地址栏点击摄像头图标，允许访问后再重试。': 'Camera permission was denied. Click the camera icon in the browser address bar, allow access, and retry.',
+    '未检测到摄像头设备，请确认摄像头已连接并正常工作。': 'No camera device was detected. Confirm that the camera is connected and working.',
+    '摄像头被其他应用占用，请关闭其他使用摄像头的程序后重试。': 'The camera is being used by another application. Close other camera apps and retry.',
+    '所选摄像头无法按当前配置启动，请选择其他摄像头。': 'The selected camera cannot start with the current configuration. Choose another camera.',
+    '摄像头画面尚未就绪，请稍候…': 'Camera preview is not ready yet. Please wait...',
+    '请点击预览区域或继续按钮以激活摄像头画面': 'Click the preview area or continue button to activate the camera preview.',
+    '请让双眼位于画面中央，并保持面部清晰可见': 'Keep both eyes centered in the frame and the face clearly visible.',
+    '无法加载 WebGazer.js 眼动追踪引擎': 'Unable to load the WebGazer.js eye-tracking engine',
+    '您的浏览器不支持摄像头访问': 'Your browser does not support camera access',
+    '正在启用摄像头…': 'Enabling camera...',
+    '摄像头访问被拒绝，无法启动眼动追踪': 'Camera access was denied, so eye tracking cannot start',
+    '正在初始化眼动追踪模型，请稍候…': 'Initializing the eye-tracking model. Please wait...',
+    '眼动追踪引擎启动失败，请确认摄像头正常并重试。': 'The eye-tracking engine failed to start. Confirm that the camera works and retry.',
+    '正在重置旧校准数据…': 'Resetting previous calibration data...',
+    '校准完成！': 'Calibration complete!',
+    '重新校准': 'Recalibrate',
+    '请选择图片以开始追踪': 'Select an image to start tracking',
+    '请先输入参与者姓名。': 'Enter the participant name first.',
+    '请先选择一个摄像头。': 'Select a camera first.',
+    '正在启用所选摄像头…': 'Enabling the selected camera...',
+    '眼动追踪引擎尚未就绪，请等待初始化完成。': 'The eye-tracking engine is not ready. Wait for initialization to finish.',
+    '请先完成一次校准。': 'Complete calibration first.',
+    '请先选择要分析的图像。': 'Select an image to analyze first.',
+    '低': 'Low',
+    '中': 'Medium',
+    '高': 'High',
+    '未选择记录': 'No record selected',
+    '当前时间段的数据点不足，无法回放轨迹。': 'There are not enough points in the current interval to replay the trajectory.',
+    '没有可用的背景图像': 'No background image is available',
+    '无法加载背景图像': 'Unable to load the background image',
+    '当前时间段数据点不足': 'Not enough data points in the current interval',
+    '有效坐标数据点不足': 'Not enough valid coordinate points',
+    '注意力密度': 'Attention Density',
+    '左上': 'Upper Left',
+    '中上': 'Upper Center',
+    '右上': 'Upper Right',
+    '左中': 'Middle Left',
+    '中心': 'Center',
+    '右中': 'Middle Right',
+    '左下': 'Lower Left',
+    '中下': 'Lower Center',
+    '右下': 'Lower Right',
+    '正常': 'Normal',
+    '有效点偏低': 'Low valid-point rate',
+    '严重偏移': 'Severe offset',
+    '边缘截断': 'Edge clipping',
+    '样本过少': 'Too few samples',
+    '无需修正': 'No correction needed',
+    '样本过少，建议排除该记录或补采': 'Too few samples; exclude this record or collect additional data.',
+    '优先仅使用有效点；不建议强修正': 'Use valid points first; forced correction is not recommended.',
+    '疑似坐标系整体偏移，可尝试中心平移修正': 'Possible coordinate-system offset; try center-shift correction.',
+    '建议筛除打印区域外点后再分析': 'Filter out points outside the printed region before analysis.',
+    '疑似映射边界截断，谨慎拉伸': 'Possible boundary clipping; use stretching cautiously.',
+    '人工复核': 'Manual review',
+    '未命名图片': 'Unnamed Image',
+    '实验组': 'Experimental',
+    '对照组': 'Control',
+    '未分组': 'Ungrouped',
+    '视线集中在局部区域；这可能是正常观看行为，必要时可用范围拉伸做探索性预览。': 'Gaze is concentrated in a local region; this may be normal viewing behavior. Use range stretching only as an exploratory preview if needed.',
+    '平均视线位置偏离中心；这可能来自观看内容本身，建议结合刺激图人工判断。': 'Mean gaze position deviates from center; this may come from the stimulus itself. Review it together with the stimulus image.',
+    '暂无可分析记录。': 'No analyzable records.',
+    '参与者': 'Participants',
+    '采样点': 'Samples',
+    '有效点比例': 'Valid Point Rate',
+    '疑似异常': 'Potential Anomalies',
+    '平均频率': 'Mean Frequency',
+    '暂无数据': 'No data',
+    '当前范围内未发现明显技术异常。局部凝视不单独计为异常。': 'No clear technical anomalies were detected in the current scope. Localized attention alone is not treated as an anomaly.',
+    '暂无可导出的分析数据': 'No analysis data to export',
+    '无法导出图层，请稍后重试。': 'Unable to export the layer. Try again later.',
+    '请先选择一次追踪记录。': 'Select a tracking record first.',
+    '当前时间段的数据点不足，无法导出图层。': 'There are not enough points in the current interval to export the layer.',
+    '当前时间段的数据点不足，无法导出学术图片。': 'There are not enough points in the current interval to export an academic figure.',
+    '请先将坐标修正模式切换为“手动修正”。': 'Switch the coordinate correction mode to "Manual Correction" first.',
+    '当前有效时间段或涂抹后剩余数据点不足，无法另存为修正版。': 'The current valid interval or remaining brushed data has too few points to save a corrected version.',
+    '修正版': 'Corrected Version',
+    '暂无可导出的追踪数据': 'No tracking data to export',
+    '暂无参与者存档可导出': 'No participant archive to export',
+    '文件读取失败': 'File read failed',
+    '存档中没有可用的参与者数据': 'The archive contains no usable participant data',
+    '当前追踪数据可能尚未导出存档，请确认是否已经存档。': 'Current tracking data may not have been exported. Confirm that it has been archived.',
+    '请先选择图像': 'Select an image first',
+    '拖框内移动，拖控制点拉伸': 'Drag inside the box to move; drag handles to stretch',
+    '视线热力图分析': 'Gaze Heatmap Analysis',
+    '视线序列分析': 'Gaze Sequence Analysis',
+    '未知参与者': 'Unknown participant',
+    '未知图片': 'Unknown image',
+    '原始坐标': 'raw coordinates',
+    '修正预览': 'correction preview',
+    '样本数': 'Samples',
+    '有效坐标率': 'Valid Coordinate Rate',
+    '平均位置': 'Mean Position',
+    '质控标记': 'QC Flag',
+    '未发现技术标记': 'No technical flag',
+    '可视化保留原始数据；修正模式仅影响预览和导出。': 'Visualization preserves original data; correction mode affects preview/export only.',
+    '由 SIGN Visual Attention 生成': 'Generated by SIGN Visual Attention',
+    '整体眼动分析': 'Aggregate Eye-Tracking Analysis',
+    '分析范围': 'Scope',
+    '生成时间': 'Generated',
+    '平均 FPS': 'Mean FPS',
+    '质控标记数': 'QC Flags',
+    '自动解释摘要': 'Automated Interpretation Notes',
+    '技术异常筛查不会将局部注意力本身视为无效。': 'Technical anomaly screening does not treat localized attention as invalid by itself.',
+  },
+  ja: {
+    '语言': '言語',
+    'SIGN Visual Attention v3 是面向标识视觉注意力研究的浏览器眼动追踪与分析工具。': 'SIGN Visual Attention v3 は、サインに対する視覚的注意研究のためのブラウザベース視線追跡・分析ツールです。',
+    '基于浏览器的实时眼动追踪工具，无需专业设备，利用摄像头即可进行眼动数据采集、热力图与视线轨迹分析。': '専門機器を使わず、カメラで視線データ収集、ヒートマップ、視線軌跡分析を行えるブラウザベースのリアルタイム視線追跡ツールです。',
+    'SIGN Visual Attention v3 · 基于浏览器的实时眼动追踪系统': 'SIGN Visual Attention v3 · ブラウザベースのリアルタイム視線追跡システム',
+    '正在初始化眼动追踪引擎': '視線追跡エンジンを初期化しています',
+    '正在加载 WebGazer.js 并请求摄像头权限…': 'WebGazer.js を読み込み、カメラ権限を要求しています...',
+    '眼动追踪初始化失败': '視線追跡の初期化に失敗しました',
+    '无法启动眼动追踪引擎。': '視線追跡エンジンを起動できません。',
+    '请确认已允许浏览器访问摄像头': 'ブラウザでカメラアクセスが許可されているか確認してください。',
+    '请使用 Chrome / Edge 等现代浏览器': 'Chrome / Edge などの最新ブラウザを使用してください。',
+    '页面需通过 HTTPS 或 localhost 访问': 'ページは HTTPS または localhost 経由で開いてください。',
+    '请确保环境光线充足、面部正对摄像头': '十分な明るさを確保し、顔をカメラの正面に向けてください。',
+    '重试初始化': '初期化を再試行',
+    '摄像头选择': 'カメラ選択',
+    '流畅摄像头选择': 'スムーズなカメラ選択',
+    '选择用于眼动追踪的摄像头': '視線追跡に使用するカメラを選択',
+    '正在读取摄像头列表…': 'カメラ一覧を読み込んでいます...',
+    '视频输入设备': '映像入力デバイス',
+    '刷新列表': '一覧を更新',
+    '返回首页': 'ホームへ戻る',
+    '使用此摄像头（Space）': 'このカメラを使用（Space）',
+    '校准前检查': 'キャリブレーション前チェック',
+    '调整摄像头至眼部位置': 'カメラを目の位置に合わせる',
+    '正在读取摄像头画面…': 'カメラ映像を読み込んでいます...',
+    '进入九点校准（Space）': '9点キャリブレーションへ（Space）',
+    '校准进行中': 'キャリブレーション中',
+    '参与者注视打印校准纸上的当前编号点；操作员按 Space / Enter / 0，或单击鼠标左键确认当前点 3 次': '参加者は印刷したキャリブレーション用紙の番号点を注視し、操作者は Space / Enter / 0 または左クリックで各点を3回確認します。',
+    '打印标识校准映射': '印刷サインキャリブレーションマップ',
+    '打印标识追踪': '印刷サイントラッキング',
+    '请让参与者观看打印出来的标识': '参加者に印刷したサインを見てもらってください。',
+    '屏幕仅用于操作员监看。系统会把视线估计映射到打印标识坐标，再叠加到报告图像上。': '画面は操作者の確認用です。視線推定は印刷サイン座標へ変換され、レポート画像に重ねて表示されます。',
+    '正在记录打印标识视线坐标...': '印刷サイン上の視線座標を記録しています...',
+    '结束追踪': 'トラッキング終了',
+    '分析页面切换': '分析ページ切り替え',
+    '聚合数据分析': '集計データ分析',
+    '内置图片选择': '内蔵画像選択',
+    '图片选择': '画像選択',
+    '请输入参与者姓名': '参加者名を入力',
+    '分析报告': '分析レポート',
+    '导出存档': 'アーカイブを書き出し',
+    '单个数据分析': '単一データ分析',
+    '整体数据分析': '全体データ分析',
+    '参与者': '参加者',
+    '追踪记录': '追跡記録',
+    '当前回顾': '現在のレビュー',
+    '未选择': '未選択',
+    '导入存档或完成追踪后，可在这里选择并回顾单次数据。': 'アーカイブを読み込むか追跡を完了すると、ここで各記録を選択して確認できます。',
+    '当前时段': '現在の時間範囲',
+    '当前点数': '現在の点数',
+    '关注质量': '注視品質',
+    '采样频率': 'サンプリング頻度',
+    '聚合分析': '集計分析',
+    '当前没有可分析的数据。': '現在分析できるデータはありません。',
+    '范围': '範囲',
+    '全部数据': '全データ',
+    '当前参与者': '現在の参加者',
+    '当前记录': '現在の記録',
+    '图片': '画像',
+    '全部图片': '全画像',
+    '条件对比': '条件比較',
+    '条件': '条件',
+    '记录': '記録',
+    '点数': '点数',
+    '有效率': '有効率',
+    '平均时长': '平均時間',
+    '中心偏移': '中心偏位',
+    '图片对比': '画像比較',
+    '平均 X/Y': '平均 X/Y',
+    '路径长度': '経路長',
+    '打印区域分布': '印刷領域分布',
+    '异常筛查': '異常スクリーニング',
+    '技术异常': '技術的異常',
+    '覆盖': '被覆',
+    '偏移': '偏位',
+    '建议': '推奨',
+    '自动摘要': '自動要約',
+    '导出分析 CSV': '分析 CSV を書き出し',
+    '导出分析 JSON': '分析 JSON を書き出し',
+    '导出整体分析图': '全体分析図を書き出し',
+    '热力图': 'ヒートマップ',
+    '视线轨迹图': '視線軌跡図',
+    '叠加背景图': '背景画像を重ねる',
+    '开始': '開始',
+    '结束': '終了',
+    '重置': 'リセット',
+    '显示全部数据': '全データを表示',
+    '坐标修正': '座標補正',
+    '原始': '生データ',
+    '中心平移': '中心移動',
+    '范围拉伸': '範囲伸縮',
+    '手动修正': '手動補正',
+    '自动': '自動',
+    '模拟回放': '再生',
+    '停止回放': '再生停止',
+    '导出透明图层': '透明レイヤーを書き出し',
+    '导出学术图片': '学術図を書き出し',
+    '工具': 'ツール',
+    '移动/变换': '移動 / 変形',
+    '涂抹异常点': '異常点をブラシ除外',
+    '恢复涂抹点': 'ブラシ点を復元',
+    '涂抹半径': 'ブラシ半径',
+    '偏移 0 / 0 · 缩放 1.00 / 1.00': 'オフセット 0 / 0 · スケール 1.00 / 1.00',
+    '已涂抹 0 点': 'ブラシ済み 0 点',
+    '重置手动修正': '手動補正をリセット',
+    '另存为修正版': '補正版として保存',
+    '导入存档文件': 'アーカイブファイルを読み込み',
+    '导入 data523 文件夹': 'data523 フォルダを読み込み',
+    '导出单次数据': '単一データを書き出し',
+    '导出全部数据': '全データを書き出し',
+    '导出 PDF': 'PDF を書き出し',
+    '基于浏览器 · 本地处理 · 隐私保护': 'ブラウザベース · ローカル処理 · プライバシー保護',
+    '实时眼动追踪系统': 'リアルタイム視線追跡システム',
+    '利用视觉追踪技术': '視線追跡技術を用いて',
+    '了解标识的注意力分布': 'サインの注意分布を把握',
+    '面向通用打印标识的眼动追踪实验：参与者观看纸面内容，系统用摄像头记录并映射打印标识视线坐标。 采用 WebGazer.js 驱动，支持热力图与视线轨迹双重可视化分析。': '汎用の印刷サインを対象にした視線追跡実験です。参加者は紙面を見て、システムはカメラで視線座標を記録し印刷サイン座標へ変換します。WebGazer.js を利用し、ヒートマップと視線軌跡の両方で分析できます。',
+    '摄像头校准': 'カメラキャリブレーション',
+    '先选择用于眼动追踪的摄像头，再通过预览调整眼部位置，并让参与者依次注视打印校准纸上的 9 个点。 操作员按 Space、Enter、0 或单击鼠标左键确认当前点，每点 3 次。': '視線追跡に使うカメラを選択し、プレビューで目の位置を調整したうえで、印刷したキャリブレーション用紙の9点を順に注視してもらいます。操作者は Space、Enter、0、または左クリックで各点を3回確認します。',
+    '参与者姓名': '参加者名',
+    '摄像头预览': 'カメラプレビュー',
+    '通用打印映射': '汎用印刷マッピング',
+    '未校准': '未キャリブレーション',
+    '开始校准': 'キャリブレーション開始',
+    '选择图片并追踪': '画像を選択して追跡',
+    '从 a1、a2、b1、b2 四张内置标识中选择，或载入外部图片。a1/b1 为对照组，a2/b2 为实验组。': 'a1、a2、b1、b2 の4枚の内蔵サインから選択するか、外部画像を読み込みます。a1/b1 は対照群、a2/b2 は実験群です。',
+    '载入外部图片': '外部画像を読み込み',
+    '外部图片': '外部画像',
+    '对照组 a1/b1': '対照群 a1/b1',
+    '实验组 a2/b2': '実験群 a2/b2',
+    '实时视线光标': 'リアルタイム視線カーソル',
+    '请先完成校准': '先にキャリブレーションを完了してください',
+    '开始追踪': '追跡開始',
+    '数据回顾与存档': 'データレビューとアーカイブ',
+    '回顾参与者的所有图片追踪记录，查看热力图与轨迹图，导出单次数据、全部数据或完整存档。': '参加者の全画像追跡記録を確認し、ヒートマップと軌跡図を閲覧し、単一データ、全データ、または完全なアーカイブを書き出します。',
+    '单次导出': '単一書き出し',
+    '全部导出': '全体書き出し',
+    '存档导入': 'アーカイブ読み込み',
+    '无需摄像头即可回顾': 'カメラなしでレビュー可能',
+    '导入存档': 'アーカイブ読み込み',
+    '打开回顾': 'レビューを開く',
+    'SIGN Visual Attention v3 · 基于浏览器的实时眼动追踪系统 · 本地处理，保护隐私': 'SIGN Visual Attention v3 · ブラウザベースのリアルタイム視線追跡システム · ローカル処理でプライバシーを保護',
+    '还没有参与者数据。可先完成追踪，或导入参与者存档。': '参加者データはまだありません。追跡を完了するか、参加者アーカイブを読み込んでください。',
+    '请选择参与者。': '参加者を選択してください。',
+    '该参与者还没有完成任何图片追踪。': 'この参加者には完了した画像追跡がまだありません。',
+    '完成一次图片追踪后，记录会出现在这里。': '画像追跡を1回完了すると、記録がここに表示されます。',
+    '未知时间': '不明な時刻',
+    '摄像头已关闭，请重新校准后开始追踪': 'カメラは閉じられています。再キャリブレーション後に追跡を開始してください。',
+    '请选择图像并重新校准': '画像を選択して再キャリブレーションしてください。',
+    '选择摄像头并校准': 'カメラを選択してキャリブレーション',
+    '所选摄像头': '選択したカメラ',
+    '您的浏览器不支持摄像头选择': 'このブラウザはカメラ選択に対応していません。',
+    '正在请求摄像头权限…': 'カメラ権限を要求しています...',
+    '未检测到可用摄像头': '利用可能なカメラが検出されません',
+    '无法读取摄像头列表': 'カメラ一覧を読み込めません',
+    '无法预览所选摄像头': '選択したカメラをプレビューできません',
+    '摄像头访问失败': 'カメラアクセスに失敗しました',
+    '您拒绝了摄像头权限。请在浏览器地址栏点击摄像头图标，允许访问后再重试。': 'カメラ権限が拒否されました。ブラウザのアドレスバーのカメラアイコンから許可し、再試行してください。',
+    '未检测到摄像头设备，请确认摄像头已连接并正常工作。': 'カメラデバイスが検出されません。接続と動作を確認してください。',
+    '摄像头被其他应用占用，请关闭其他使用摄像头的程序后重试。': 'カメラは他のアプリで使用中です。該当アプリを閉じて再試行してください。',
+    '所选摄像头无法按当前配置启动，请选择其他摄像头。': '選択したカメラは現在の設定で起動できません。別のカメラを選択してください。',
+    '摄像头画面尚未就绪，请稍候…': 'カメラ映像はまだ準備できていません。しばらくお待ちください...',
+    '请点击预览区域或继续按钮以激活摄像头画面': 'プレビュー領域または続行ボタンをクリックしてカメラ映像を有効にしてください。',
+    '请让双眼位于画面中央，并保持面部清晰可见': '両目を画面中央に置き、顔がはっきり見える状態を保ってください。',
+    '无法加载 WebGazer.js 眼动追踪引擎': 'WebGazer.js 視線追跡エンジンを読み込めません',
+    '您的浏览器不支持摄像头访问': 'このブラウザはカメラアクセスに対応していません',
+    '正在启用摄像头…': 'カメラを有効化しています...',
+    '摄像头访问被拒绝，无法启动眼动追踪': 'カメラアクセスが拒否されたため、視線追跡を開始できません',
+    '正在初始化眼动追踪模型，请稍候…': '視線追跡モデルを初期化しています。しばらくお待ちください...',
+    '眼动追踪引擎启动失败，请确认摄像头正常并重试。': '視線追跡エンジンの起動に失敗しました。カメラが正常か確認して再試行してください。',
+    '正在重置旧校准数据…': '以前のキャリブレーションデータをリセットしています...',
+    '校准完成！': 'キャリブレーション完了！',
+    '重新校准': '再キャリブレーション',
+    '请选择图片以开始追踪': '追跡を開始するには画像を選択してください',
+    '请先输入参与者姓名。': '先に参加者名を入力してください。',
+    '请先选择一个摄像头。': '先にカメラを選択してください。',
+    '正在启用所选摄像头…': '選択したカメラを有効化しています...',
+    '眼动追踪引擎尚未就绪，请等待初始化完成。': '視線追跡エンジンはまだ準備できていません。初期化完了をお待ちください。',
+    '请先完成一次校准。': '先にキャリブレーションを1回完了してください。',
+    '请先选择要分析的图像。': '先に分析する画像を選択してください。',
+    '低': '低',
+    '中': '中',
+    '高': '高',
+    '未选择记录': '記録が選択されていません',
+    '当前时间段的数据点不足，无法回放轨迹。': '現在の時間範囲のデータ点が不足しているため、軌跡を再生できません。',
+    '没有可用的背景图像': '利用可能な背景画像がありません',
+    '无法加载背景图像': '背景画像を読み込めません',
+    '当前时间段数据点不足': '現在の時間範囲のデータ点が不足しています',
+    '有效坐标数据点不足': '有効座標データ点が不足しています',
+    '注意力密度': '注意密度',
+    '左上': '左上',
+    '中上': '上中央',
+    '右上': '右上',
+    '左中': '左中央',
+    '中心': '中央',
+    '右中': '右中央',
+    '左下': '左下',
+    '中下': '下中央',
+    '右下': '右下',
+    '正常': '正常',
+    '有效点偏低': '有効点が少ない',
+    '严重偏移': '大きな偏位',
+    '边缘截断': '端部クリッピング',
+    '样本过少': 'サンプル不足',
+    '无需修正': '補正不要',
+    '样本过少，建议排除该记录或补采': 'サンプル不足です。この記録を除外するか追加収集してください。',
+    '优先仅使用有效点；不建议强修正': 'まず有効点のみを使用してください。強制補正は推奨しません。',
+    '疑似坐标系整体偏移，可尝试中心平移修正': '座標系全体の偏位が疑われます。中心移動補正を試せます。',
+    '建议筛除打印区域外点后再分析': '印刷領域外の点を除外してから分析することを推奨します。',
+    '疑似映射边界截断，谨慎拉伸': 'マッピング境界のクリッピングが疑われます。伸縮は慎重に使用してください。',
+    '人工复核': '手動確認',
+    '未命名图片': '名称未設定画像',
+    '实验组': '実験群',
+    '对照组': '対照群',
+    '未分组': '未分類',
+    '视线集中在局部区域；这可能是正常观看行为，必要时可用范围拉伸做探索性预览。': '視線が局所領域に集中しています。通常の閲覧行動である可能性があります。必要な場合のみ探索的プレビューとして範囲伸縮を使用してください。',
+    '平均视线位置偏离中心；这可能来自观看内容本身，建议结合刺激图人工判断。': '平均視線位置が中心からずれています。刺激画像自体による可能性があるため、刺激図と合わせて確認してください。',
+    '暂无可分析记录。': '分析可能な記録がありません。',
+    '采样点': 'サンプル',
+    '有效点比例': '有効点率',
+    '疑似异常': '疑似異常',
+    '平均频率': '平均頻度',
+    '暂无数据': 'データなし',
+    '当前范围内未发现明显技术异常。局部凝视不单独计为异常。': '現在の範囲で明確な技術的異常は検出されませんでした。局所的注視だけでは異常とはみなしません。',
+    '暂无可导出的分析数据': '書き出し可能な分析データがありません',
+    '无法导出图层，请稍后重试。': 'レイヤーを書き出せません。後でもう一度お試しください。',
+    '请先选择一次追踪记录。': '先に追跡記録を1つ選択してください。',
+    '当前时间段的数据点不足，无法导出图层。': '現在の時間範囲のデータ点が不足しているため、レイヤーを書き出せません。',
+    '当前时间段的数据点不足，无法导出学术图片。': '現在の時間範囲のデータ点が不足しているため、学術図を書き出せません。',
+    '请先将坐标修正模式切换为“手动修正”。': '先に座標補正モードを「手動補正」に切り替えてください。',
+    '当前有效时间段或涂抹后剩余数据点不足，无法另存为修正版。': '現在の有効時間範囲、またはブラシ後に残った点が不足しているため、補正版として保存できません。',
+    '修正版': '補正版',
+    '暂无可导出的追踪数据': '書き出し可能な追跡データがありません',
+    '暂无参与者存档可导出': '書き出し可能な参加者アーカイブがありません',
+    '文件读取失败': 'ファイル読み込みに失敗しました',
+    '存档中没有可用的参与者数据': 'アーカイブに使用可能な参加者データがありません',
+    '当前追踪数据可能尚未导出存档，请确认是否已经存档。': '現在の追跡データはまだアーカイブ書き出しされていない可能性があります。保存済みか確認してください。',
+    '请先选择图像': '先に画像を選択してください',
+    '拖框内移动，拖控制点拉伸': '枠内をドラッグして移動、ハンドルをドラッグして伸縮',
+    '视线热力图分析': '視線ヒートマップ分析',
+    '视线序列分析': '視線シーケンス分析',
+    '未知参与者': '不明な参加者',
+    '未知图片': '不明な画像',
+    '原始坐标': '生座標',
+    '修正预览': '補正プレビュー',
+    '样本数': 'サンプル数',
+    '有效坐标率': '有効座標率',
+    '平均位置': '平均位置',
+    '质控标记': '品質管理フラグ',
+    '未发现技术标记': '技術的フラグなし',
+    '可视化保留原始数据；修正模式仅影响预览和导出。': '可視化は元データを保持します。補正モードはプレビューと書き出しにのみ反映されます。',
+    '由 SIGN Visual Attention 生成': 'SIGN Visual Attention により生成',
+    '整体眼动分析': '全体視線追跡分析',
+    '分析范围': '範囲',
+    '生成时间': '生成日時',
+    '平均 FPS': '平均 FPS',
+    '质控标记数': '品質管理フラグ数',
+    '自动解释摘要': '自動解釈メモ',
+    '技术异常筛查不会将局部注意力本身视为无效。': '技術的異常スクリーニングでは、局所的注意そのものを無効とはみなしません。',
+  },
+};
+
+const I18N_PATTERNS = {
+  en: [
+    [/^错误详情：(.+)$/, match => `Error details: ${match[1]}`],
+    [/^摄像头 (\d+)$/, match => `Camera ${match[1]}`],
+    [/^(.+) · (对照组|实验组|外部图片)$/, match => `${match[1]} · ${localizeText(match[2])}`],
+    [/^检测到 (\d+) 个摄像头$/, match => `Detected ${match[1]} camera${match[1] === '1' ? '' : 's'}`],
+    [/^正在启用摄像头：(.+)…$/, match => `Enabling camera: ${match[1]}...`],
+    [/^已选择「(.+)」(.+)，请先完成校准$/, match => `Selected "${match[1]}" (${localizeText(match[2])}); complete calibration first.`],
+    [/^(.+) 校准完成$/, match => `${match[1]} calibration complete`],
+    [/^(.+) · 打印标识校准 · 已记录 (\d+) 次$/, match => `${match[1]} · printed-sign calibration · ${match[2]} run${match[2] === '1' ? '' : 's'} recorded`],
+    [/^(.+) · (.+)可开始追踪$/, match => `${match[1]} · ${match[2]} is ready for tracking`],
+    [/^(.+) 次追踪 · (.+)$/, match => `${match[1]} tracking run${match[1] === '1' ? '' : 's'} · ${match[2]}`],
+    [/^(.+) 点 · (.+) s · (.+)$/, match => `${match[1]} points · ${match[2]} s · ${match[3]}`],
+    [/^(.+) 个数据点，追踪 (.+) 秒。$/, match => `${match[1]} data points, tracked for ${match[2]} seconds.`],
+    [/^显示全部 (\d+) 点$/, match => `Showing all ${match[1]} points`],
+    [/^(.+)-(.+) s · (.+)\/(.+) 点$/, match => `${match[1]}-${match[2]} s · ${match[3]}/${match[4]} points`],
+    [/^偏移 (.+) \/ (.+) · 缩放 (.+) \/ (.+)$/, match => `Offset ${match[1]} / ${match[2]} · Scale ${match[3]} / ${match[4]}`],
+    [/^已涂抹 (.+) 点$/, match => `Brushed ${match[1]} points`],
+    [/^(.+) 点$/, match => `${match[1]} points`],
+    [/^共 (.+) 名参与者、(.+) 次追踪、(.+) 个采样点。$/, match => `${match[1]} participant${match[1] === '1' ? '' : 's'}, ${match[2]} tracking run${match[2] === '1' ? '' : 's'}, and ${match[3]} samples in total.`],
+    [/^筛查出 (.+) 次疑似技术异常记录，局部凝视不会单独计为异常。$/, match => `${match[1]} potential technical-anomaly run${match[1] === '1' ? '' : 's'} detected; localized attention alone is not treated as an anomaly.`],
+    [/^打印区域有效点比例为 (.+)，平均采样频率 (.+) Hz。$/, match => `The printed-region valid-point rate is ${match[1]}, with a mean sampling frequency of ${match[2]} Hz.`],
+    [/^视线最集中区域是「(.+)」，占有效点 (.+)。$/, match => `The densest gaze region is "${localizeText(match[1])}", accounting for ${match[2]} of valid points.`],
+    [/^条件有效率最高的是「(.+)」，比最低条件高 (.+)。$/, match => `The highest valid rate appears in "${localizeText(match[1])}", ${match[2]} higher than the lowest condition.`],
+    [/^平均视线移动路径最长的图片是「(.+)」，约 (.+) mm。$/, match => `The image with the longest mean gaze path is "${match[1]}", approximately ${match[2]} mm.`],
+    [/^(.+) · (.+) 次记录 · (.+) 点$/, match => `${localizeText(match[1])} · ${match[2]} records · ${match[3]} points`],
+    [/^无法导出图层：(.+)$/, match => `Unable to export layer: ${match[1]}`],
+    [/^无法导出学术图片：(.+)$/, match => `Unable to export academic figure: ${match[1]}`],
+    [/^无法载入外部图片：(.+)$/, match => `Unable to load external image: ${match[1]}`],
+    [/^无法导入存档：(.+)$/, match => `Unable to import archive: ${match[1]}`],
+    [/^(.+): 文件读取失败$/, match => `${match[1]}: file read failed`],
+    [/^(.+): 存档中没有可用的参与者数据$/, match => `${match[1]}: archive contains no usable participant data`],
+    [/^选择图片 (\d+): (.+)，(.+)$/, match => `Select image ${match[1]}: ${match[2]}, ${localizeText(match[3])}`],
+    [/^选择内置图片 (\d+): (.+)，(.+)$/, match => `Select built-in image ${match[1]}: ${match[2]}, ${localizeText(match[3])}`],
+  ],
+  ja: [
+    [/^错误详情：(.+)$/, match => `エラー詳細：${match[1]}`],
+    [/^摄像头 (\d+)$/, match => `カメラ ${match[1]}`],
+    [/^(.+) · (对照组|实验组|外部图片)$/, match => `${match[1]} · ${localizeText(match[2])}`],
+    [/^检测到 (\d+) 个摄像头$/, match => `${match[1]} 台のカメラを検出しました`],
+    [/^正在启用摄像头：(.+)…$/, match => `カメラを有効化しています：${match[1]}...`],
+    [/^已选择「(.+)」(.+)，请先完成校准$/, match => `「${match[1]}」（${localizeText(match[2])}）を選択しました。先にキャリブレーションを完了してください。`],
+    [/^(.+) 校准完成$/, match => `${match[1]} のキャリブレーション完了`],
+    [/^(.+) · 打印标识校准 · 已记录 (\d+) 次$/, match => `${match[1]} · 印刷サインキャリブレーション · ${match[2]} 回記録済み`],
+    [/^(.+) · (.+)可开始追踪$/, match => `${match[1]} · ${match[2]} は追跡を開始できます`],
+    [/^(.+) 次追踪 · (.+)$/, match => `${match[1]} 回の追跡 · ${match[2]}`],
+    [/^(.+) 点 · (.+) s · (.+)$/, match => `${match[1]} 点 · ${match[2]} s · ${match[3]}`],
+    [/^(.+) 个数据点，追踪 (.+) 秒。$/, match => `${match[1]} 個のデータ点、追跡時間 ${match[2]} 秒。`],
+    [/^显示全部 (\d+) 点$/, match => `全 ${match[1]} 点を表示`],
+    [/^(.+)-(.+) s · (.+)\/(.+) 点$/, match => `${match[1]}-${match[2]} s · ${match[3]}/${match[4]} 点`],
+    [/^偏移 (.+) \/ (.+) · 缩放 (.+) \/ (.+)$/, match => `オフセット ${match[1]} / ${match[2]} · スケール ${match[3]} / ${match[4]}`],
+    [/^已涂抹 (.+) 点$/, match => `ブラシ済み ${match[1]} 点`],
+    [/^(.+) 点$/, match => `${match[1]} 点`],
+    [/^共 (.+) 名参与者、(.+) 次追踪、(.+) 个采样点。$/, match => `合計 ${match[1]} 名の参加者、${match[2]} 回の追跡、${match[3]} 個のサンプルがあります。`],
+    [/^筛查出 (.+) 次疑似技术异常记录，局部凝视不会单独计为异常。$/, match => `${match[1]} 回の疑似技術的異常を検出しました。局所的注視だけでは異常とはみなしません。`],
+    [/^打印区域有效点比例为 (.+)，平均采样频率 (.+) Hz。$/, match => `印刷領域の有効点率は ${match[1]}、平均サンプリング頻度は ${match[2]} Hz です。`],
+    [/^视线最集中区域是「(.+)」，占有效点 (.+)。$/, match => `視線が最も集中した領域は「${localizeText(match[1])}」で、有効点の ${match[2]} を占めます。`],
+    [/^条件有效率最高的是「(.+)」，比最低条件高 (.+)。$/, match => `有効率が最も高い条件は「${localizeText(match[1])}」で、最低条件より ${match[2]} 高いです。`],
+    [/^平均视线移动路径最长的图片是「(.+)」，约 (.+) mm。$/, match => `平均視線移動経路が最も長い画像は「${match[1]}」で、約 ${match[2]} mm です。`],
+    [/^(.+) · (.+) 次记录 · (.+) 点$/, match => `${localizeText(match[1])} · ${match[2]} 件の記録 · ${match[3]} 点`],
+    [/^无法导出图层：(.+)$/, match => `レイヤーを書き出せません：${match[1]}`],
+    [/^无法导出学术图片：(.+)$/, match => `学術図を書き出せません：${match[1]}`],
+    [/^无法载入外部图片：(.+)$/, match => `外部画像を読み込めません：${match[1]}`],
+    [/^无法导入存档：(.+)$/, match => `アーカイブを読み込めません：${match[1]}`],
+    [/^(.+): 文件读取失败$/, match => `${match[1]}: ファイル読み込みに失敗しました`],
+    [/^(.+): 存档中没有可用的参与者数据$/, match => `${match[1]}: アーカイブに使用可能な参加者データがありません`],
+    [/^选择图片 (\d+): (.+)，(.+)$/, match => `画像 ${match[1]} を選択：${match[2]}、${localizeText(match[3])}`],
+    [/^选择内置图片 (\d+): (.+)，(.+)$/, match => `内蔵画像 ${match[1]} を選択：${match[2]}、${localizeText(match[3])}`],
+  ],
+};
+
+const originalTextNodes = new WeakMap();
+const originalAttributes = new WeakMap();
+const nativeAlert = window.alert.bind(window);
+
+function getInitialLanguage() {
+  const saved = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+  if (SUPPORTED_LANGUAGES.has(saved)) return saved;
+  const browserLanguage = navigator.language || '';
+  if (browserLanguage.toLowerCase().startsWith('ja')) return 'ja';
+  if (browserLanguage.toLowerCase().startsWith('en')) return 'en';
+  return 'zh-CN';
+}
+
+function translateSourceText(source, language = State?.language || 'zh-CN') {
+  const text = String(source ?? '');
+  if (language === 'zh-CN') return text;
+  const exact = I18N_TEXT[language]?.[text];
+  if (exact) return exact;
+  const patterns = I18N_PATTERNS[language] || [];
+  for (const [pattern, formatter] of patterns) {
+    const match = text.match(pattern);
+    if (match) return formatter(match);
+  }
+  return text;
+}
+
+function localizeText(source) {
+  return translateSourceText(source, State.language);
+}
+
+function getDisplayLocale() {
+  if (State.language === 'ja') return 'ja-JP';
+  if (State.language === 'en') return 'en-US';
+  return 'zh-CN';
+}
+
+function localizeTextNode(node) {
+  const raw = node.nodeValue || '';
+  const trimmed = raw.trim();
+  if (!trimmed) return;
+  const knownSource = I18N_TEXT.en[trimmed] || I18N_TEXT.ja[trimmed] || I18N_PATTERNS.en.some(([pattern]) => pattern.test(trimmed)) || I18N_PATTERNS.ja.some(([pattern]) => pattern.test(trimmed));
+  if (knownSource || !originalTextNodes.has(node)) {
+    originalTextNodes.set(node, trimmed);
+  }
+  const source = originalTextNodes.get(node) || trimmed;
+  const translated = localizeText(source);
+  const leading = raw.match(/^\s*/)?.[0] || '';
+  const trailing = raw.match(/\s*$/)?.[0] || '';
+  const next = `${leading}${translated}${trailing}`;
+  if (node.nodeValue !== next) node.nodeValue = next;
+}
+
+function localizeAttributes(el) {
+  const attrs = ['placeholder', 'title', 'aria-label', 'alt'];
+  attrs.forEach(attr => {
+    if (!el.hasAttribute(attr)) return;
+    let attrMap = originalAttributes.get(el);
+    if (!attrMap) {
+      attrMap = {};
+      originalAttributes.set(el, attrMap);
+    }
+    const current = el.getAttribute(attr);
+    const knownSource = I18N_TEXT.en[current] || I18N_TEXT.ja[current] || I18N_PATTERNS.en.some(([pattern]) => pattern.test(current)) || I18N_PATTERNS.ja.some(([pattern]) => pattern.test(current));
+    if (knownSource || !attrMap[attr]) attrMap[attr] = current;
+    const translated = localizeText(attrMap[attr]);
+    if (current !== translated) el.setAttribute(attr, translated);
+  });
+}
+
+function localizeElementTree(root = document.body) {
+  if (!root) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {
+    acceptNode(node) {
+      const parent = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+      if (!parent || parent.closest('script, style, textarea')) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    },
+  });
+
+  do {
+    const node = walker.currentNode;
+    if (node.nodeType === Node.TEXT_NODE) localizeTextNode(node);
+    else if (node.nodeType === Node.ELEMENT_NODE) localizeAttributes(node);
+  } while (walker.nextNode());
+}
+
+function applyLanguage(language) {
+  State.language = SUPPORTED_LANGUAGES.has(language) ? language : 'zh-CN';
+  localStorage.setItem(LANGUAGE_STORAGE_KEY, State.language);
+  document.documentElement.lang = State.language === 'ja' ? 'ja' : (State.language === 'en' ? 'en' : 'zh-CN');
+  document.title = localizeText('SIGN Visual Attention v3 · 基于浏览器的实时眼动追踪系统');
+  document.querySelector('meta[name="description"]')?.setAttribute(
+    'content',
+    localizeText('SIGN Visual Attention v3 是面向标识视觉注意力研究的浏览器眼动追踪与分析工具。')
+  );
+  if (EL.languageSelect) EL.languageSelect.value = State.language;
+  localizeElementTree(document.body);
+}
+
+function startLanguageObserver() {
+  const observer = new MutationObserver(mutations => {
+    mutations.forEach(mutation => {
+      if (mutation.type === 'characterData') {
+        localizeTextNode(mutation.target);
+      } else if (mutation.type === 'childList') {
+        mutation.addedNodes.forEach(node => {
+          if (node.nodeType === Node.TEXT_NODE) localizeTextNode(node);
+          else if (node.nodeType === Node.ELEMENT_NODE) localizeElementTree(node);
+        });
+      } else if (mutation.type === 'attributes') {
+        localizeAttributes(mutation.target);
+      }
+    });
+  });
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+    attributes: true,
+    attributeFilter: ['placeholder', 'title', 'aria-label', 'alt'],
+  });
+}
+
+window.alert = message => nativeAlert(localizeText(message));
+
 // ─── 状态 ──────────────────────────────────────────────────────
 const State = {
+  language: getInitialLanguage(),
   webgazerReady: false,   // WebGazer + 摄像头完全就绪
   calibrationDone: false,
   isTracking: false,
@@ -28,6 +750,7 @@ const State = {
   calibrationRecording: false,
   currentA4Plane: null,
   reportShowBackground: true,
+  reportCorrectionMode: 'raw',
   lastReportRunId: null,
   cameraDevices: [],
   selectedCameraDeviceId: '',
@@ -42,12 +765,16 @@ const State = {
   calibrationScreenStarting: false,
   archiveDirty: false,
   archiveUnloadPrompted: false,
+  latestAnalysisSnapshot: null,
+  manualCorrection: null,
+  manualCorrectionRunKey: '',
 };
 
 // ─── DOM ────────────────────────────────────────────────────────
 const $ = (id) => document.getElementById(id);
 const EL = {
   // 弹窗
+  languageSelect:  $('language-select'),
   loadingOverlay:  $('loading-overlay'),
   loadingStatus:   $('loading-status'),
   errorModal:      $('error-modal'),
@@ -97,6 +824,8 @@ const EL = {
   calibStatusLabel:      $('calib-status-label'),
   trackStatusIndicator:  $('track-status-indicator'),
   imageGallery:    $('image-gallery'),
+  externalImageInput: $('external-image-input'),
+  externalImageBtn: $('external-image-btn'),
 
   // 追踪
   trackingImage:        $('tracking-image'),
@@ -105,6 +834,8 @@ const EL = {
   stopTrackingBtn:      $('stop-tracking-btn'),
 
   // 报告
+  singleAnalysisTab: $('single-analysis-tab'),
+  overallAnalysisTab: $('overall-analysis-tab'),
   statDuration:  $('stat-duration'),
   statPoints:    $('stat-points'),
   statQuality:   $('stat-quality'),
@@ -123,11 +854,40 @@ const EL = {
   vizTimeEnd:    $('viz-time-end'),
   vizTimeResetBtn: $('viz-time-reset-btn'),
   vizRangeStatus: $('viz-range-status'),
+  vizCorrectionMode: $('viz-correction-mode'),
+  manualCorrectionPanel: $('manual-correction-panel'),
+  manualCorrectionCanvas: $('manual-correction-canvas'),
+  manualCorrectionTool: $('manual-correction-tool'),
+  manualBrushRadius: $('manual-brush-radius'),
+  manualTransformStatus: $('manual-transform-status'),
+  manualExcludedStatus: $('manual-excluded-status'),
+  manualResetBtn: $('manual-reset-btn'),
+  saveCorrectedVersionBtn: $('save-corrected-version-btn'),
   gazePlaybackBtn: $('gaze-playback-btn'),
   exportVizLayerBtn: $('export-viz-layer-btn'),
+  exportAcademicFigureBtn: $('export-academic-figure-btn'),
+  analysisScopeNote: $('analysis-scope-note'),
+  analysisScopeSelect: $('analysis-scope-select'),
+  analysisImageSelect: $('analysis-image-select'),
+  analysisSummaryGrid: $('analysis-summary-grid'),
+  analysisConditionCount: $('analysis-condition-count'),
+  analysisConditionTable: $('analysis-condition-table'),
+  analysisImageCount: $('analysis-image-count'),
+  analysisImageTable: $('analysis-image-table'),
+  analysisZoneTotal: $('analysis-zone-total'),
+  analysisZoneGrid: $('analysis-zone-grid'),
+  analysisAnomalyCount: $('analysis-anomaly-count'),
+  analysisAnomalyTable: $('analysis-anomaly-table'),
+  analysisInsightCount: $('analysis-insight-count'),
+  analysisInsights: $('analysis-insights'),
+  exportAnalysisCsvBtn: $('export-analysis-csv-btn'),
+  exportAnalysisJsonBtn: $('export-analysis-json-btn'),
+  exportAnalysisFigureBtn: $('export-analysis-figure-btn'),
   backHomeBtn:   $('back-home-btn'),
   importArchiveBtn:   $('import-archive-btn'),
   importArchiveInput: $('import-archive-input'),
+  importArchiveFolderBtn: $('import-archive-folder-btn'),
+  importArchiveFolderInput: $('import-archive-folder-input'),
   exportArchiveBtn:   $('export-archive-btn'),
   exportSelectedDataBtn: $('export-selected-data-btn'),
   exportDataBtn: $('export-data-btn'),
@@ -147,10 +907,10 @@ const CALIBRATION_SAMPLES_PER_CONFIRM = 3;
 const CALIBRATION_SAMPLE_INTERVAL_MS = 45;
 const CALIBRATION_KEYS = new Set([' ', 'Enter', '0']);
 const BUILTIN_IMAGES = [
-  { id: 'a1', name: 'a1', group: 'A', condition: 'control', conditionLabel: '对照类', src: 'A1.png' },
-  { id: 'a2', name: 'a2', group: 'A', condition: 'control', conditionLabel: '对照类', src: 'A2.png' },
-  { id: 'b1', name: 'b1', group: 'B', condition: 'experiment', conditionLabel: '实验类', src: 'B1.png' },
-  { id: 'b2', name: 'b2', group: 'B', condition: 'experiment', conditionLabel: '实验类', src: 'B2.png' },
+  { id: 'a1', name: 'a1', group: 'A', condition: 'control', conditionLabel: '对照组', src: 'A1.png' },
+  { id: 'a2', name: 'a2', group: 'A', condition: 'experiment', conditionLabel: '实验组', src: 'A2.png' },
+  { id: 'b1', name: 'b1', group: 'B', condition: 'control', conditionLabel: '对照组', src: 'B1.png' },
+  { id: 'b2', name: 'b2', group: 'B', condition: 'experiment', conditionLabel: '实验组', src: 'B2.png' },
 ];
 
 // ─── 显示/隐藏弹窗 ─────────────────────────────────────────────
@@ -176,10 +936,17 @@ function createCalibrationSession() {
   State.calibrationSessionSeq += 1;
   const now = new Date().toISOString();
   const enteredName = EL.participantIdInput.value.trim();
-  const participantId = enteredName || `未命名参与者-${State.calibrationSessionSeq}`;
+  const participantLabel = enteredName || `未命名参与者-${State.calibrationSessionSeq}`;
+  const usedIds = new Set(State.calibrationSessions.map(session => session.id));
+  let participantId = participantLabel;
+  let suffix = 2;
+  while (usedIds.has(participantId)) {
+    participantId = `${participantLabel}-${suffix}`;
+    suffix += 1;
+  }
   const session = {
     id: participantId,
-    label: participantId,
+    label: participantLabel,
     calibratedAt: now,
     coordinateSystem: 'a4-landscape-paper',
     a4Plane: State.currentA4Plane ? { ...State.currentA4Plane } : null,
@@ -252,6 +1019,7 @@ function selectRun(sessionId, runId) {
 }
 
 function showDataScreen(run = State.currentReportRun) {
+  setReportMode('single');
   if (run) {
     const record = findRunRecord(run);
     if (record) {
@@ -268,6 +1036,23 @@ function showDataScreen(run = State.currentReportRun) {
   updateReportFromCurrentRun();
 }
 
+function setReportMode(mode = 'single') {
+  const normalized = mode === 'overall' ? 'overall' : 'single';
+  EL.reportScreen.classList.toggle('report-mode-single', normalized === 'single');
+  EL.reportScreen.classList.toggle('report-mode-overall', normalized === 'overall');
+  EL.singleAnalysisTab.classList.toggle('active', normalized === 'single');
+  EL.overallAnalysisTab.classList.toggle('active', normalized === 'overall');
+  EL.singleAnalysisTab.setAttribute('aria-selected', String(normalized === 'single'));
+  EL.overallAnalysisTab.setAttribute('aria-selected', String(normalized === 'overall'));
+
+  if (normalized === 'single') {
+    updateReportFromCurrentRun();
+  } else {
+    stopGazePlayback(false);
+    updateAnalysisDashboard();
+  }
+}
+
 function renderDataWorkbench() {
   updateHomeDataSummary();
   EL.participantCount.textContent = State.calibrationSessions.length;
@@ -280,6 +1065,7 @@ function renderDataWorkbench() {
     EL.runCount.textContent = '0';
     EL.selectedRunLabel.textContent = '未选择';
     EL.selectedRunNote.textContent = '导入存档或完成追踪后，可在这里选择并回顾单次数据。';
+    updateAnalysisDashboard();
     return;
   }
 
@@ -303,6 +1089,7 @@ function renderDataWorkbench() {
     EL.runList.innerHTML = '<p class="data-empty">该参与者还没有完成任何图片追踪。</p>';
     EL.selectedRunLabel.textContent = session.label;
     EL.selectedRunNote.textContent = '完成一次图片追踪后，记录会出现在这里。';
+    updateAnalysisDashboard();
     return;
   }
 
@@ -323,6 +1110,7 @@ function renderDataWorkbench() {
     EL.selectedRunLabel.textContent = `${session.label} / ${current.image.name}`;
     EL.selectedRunNote.textContent = `${current.points.length} 个数据点，追踪 ${current.duration.toFixed(1)} 秒。`;
   }
+  updateAnalysisDashboard();
 }
 
 function updateReportFromCurrentRun() {
@@ -343,8 +1131,10 @@ function updateReportFromCurrentRun() {
   if (State.lastReportRunId !== reportRunKey) {
     State.lastReportRunId = reportRunKey;
     resetReportTimeRange(run);
+    if (State.reportCorrectionMode === 'manual') ensureManualCorrectionState(run);
   }
   updateReportStats(run);
+  updateManualCorrectionPanel();
   if (EL.tabHeatmap.classList.contains('active')) drawHeatmap();
   else drawGazePlot();
 }
@@ -363,7 +1153,7 @@ function formatDateTime(value) {
   if (!value) return '未知时间';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString('zh-CN', { hour12: false });
+  return date.toLocaleString(getDisplayLocale(), { hour12: false });
 }
 
 function clamp01(value) {
@@ -989,7 +1779,7 @@ function onCalibrationComplete() {
     if (State.selectedImageId) {
       enableTrackButton();
     } else {
-      setTrackStatus('status-pending', '请选择内置图片以开始追踪');
+      setTrackStatus('status-pending', '请选择图片以开始追踪');
     }
   }, 1000);
 }
@@ -1026,7 +1816,7 @@ function renderImageGallery() {
     item.className = `image-thumb builtin-image-thumb${image.id === State.selectedImageId ? ' selected' : ''}`;
     item.tabIndex = 0;
     item.setAttribute('role', 'button');
-    item.setAttribute('aria-label', `选择内置图片 ${index + 1}: ${image.name}，${image.conditionLabel}`);
+    item.setAttribute('aria-label', `选择图片 ${index + 1}: ${image.name}，${image.conditionLabel}`);
     item.addEventListener('click', () => selectImage(image.id));
     item.addEventListener('keydown', event => {
       if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -1045,6 +1835,43 @@ function renderImageGallery() {
     item.append(img, name);
     EL.imageGallery.appendChild(item);
   });
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = event => resolve(String(event.target?.result || ''));
+    reader.onerror = () => reject(new Error('文件读取失败'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function loadExternalImage(file) {
+  if (!file || !file.type?.startsWith('image/')) {
+    alert('请先选择图像');
+    return;
+  }
+
+  try {
+    const src = await readFileAsDataUrl(file);
+    if (!src) throw new Error('文件读取失败');
+    const id = `external-${Date.now()}`;
+    const image = {
+      id,
+      name: file.name.replace(/\.[^.]+$/, '') || localizeText('外部图片'),
+      group: 'external',
+      condition: 'external',
+      conditionLabel: '外部图片',
+      size: file.size || 0,
+      src,
+    };
+    State.uploadedImages.push(image);
+    selectImage(id);
+  } catch (err) {
+    alert(`无法载入外部图片：${err.message}`);
+  } finally {
+    if (EL.externalImageInput) EL.externalImageInput.value = '';
+  }
 }
 
 async function startCalibrationFromHome() {
@@ -1128,7 +1955,7 @@ function enableTrackButton() {
   const image = getSelectedImage();
   const name = image ? `「${image.name}」` : '当前图像';
   const runCount = State.calibrationSession ? State.calibrationSession.runs.length : 0;
-  const sessionText = State.calibrationSession ? `${State.calibrationSession.label} · A4纸面校准 · 已记录 ${runCount} 次` : '已校准';
+  const sessionText = State.calibrationSession ? `${State.calibrationSession.label} · 打印标识校准 · 已记录 ${runCount} 次` : '已校准';
   setTrackStatus('status-active', `${sessionText} · ${name}可开始追踪`);
 }
 
@@ -1278,6 +2105,10 @@ function getPointTimeSeconds(point, index, points, run) {
   return 0;
 }
 
+function getPointIdentity(point, index) {
+  return String(point?.index ?? index + 1);
+}
+
 function getReportTimeRange(run = State.currentReportRun) {
   const duration = Math.max(0, Number(run?.duration) || 0);
   const startRaw = Number(EL.vizTimeStart.value);
@@ -1294,15 +2125,26 @@ function getReportTimeRange(run = State.currentReportRun) {
   };
 }
 
-function getFilteredReportPoints(run = State.currentReportRun) {
+function getTimeFilteredReportPoints(run = State.currentReportRun) {
   const points = run ? run.points : State.gazeHistory;
   if (!points.length) return [];
 
   const range = getReportTimeRange(run);
-  return points.filter((point, index) => {
+  return points
+    .map((point, index) => ({ point, index }))
+    .filter(({ point, index }) => {
     const t = getPointTimeSeconds(point, index, points, run);
     return t >= range.start && t <= range.end;
   });
+}
+
+function getFilteredReportPoints(run = State.currentReportRun) {
+  const entries = getTimeFilteredReportPoints(run);
+  if (!isManualCorrectionActive(run)) return entries.map(entry => entry.point);
+  const excluded = State.manualCorrection?.excluded || new Set();
+  return entries
+    .filter(({ point, index }) => !excluded.has(getPointIdentity(point, index)))
+    .map(entry => entry.point);
 }
 
 function updateReportRangeStatus(run = State.currentReportRun, count = null) {
@@ -1449,7 +2291,7 @@ function drawReportMessage(canvas, text, transparent = false) {
   ctx.font = '16px Inter, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(text, (canvas.width || 1) / 2, (canvas.height || 1) / 2);
+  ctx.fillText(localizeText(text), (canvas.width || 1) / 2, (canvas.height || 1) / 2);
 }
 
 function handleReportImageError(canvas, options, run, message = '无法加载背景图像') {
@@ -1461,6 +2303,108 @@ function handleReportImageError(canvas, options, run, message = '无法加载背
   updateReportRangeStatus(run, 0);
   options.onError?.(new Error(message));
   options.onComplete?.(canvas);
+}
+
+function getMetricForRun(run) {
+  const record = findRunRecord(run);
+  if (record) return computeRunMetrics(record);
+  const session = State.calibrationSession || { id: 'current', label: '当前参与者' };
+  return computeRunMetrics({ session, run, trialIndex: 1 });
+}
+
+function getRunManualKey(run = State.currentReportRun) {
+  const record = findRunRecord(run);
+  return `${record?.session?.id || State.selectedSessionId || 'session'}:${run?.id || 'run'}`;
+}
+
+function createManualCorrectionState() {
+  return {
+    offsetX: 0,
+    offsetY: 0,
+    scaleX: 1,
+    scaleY: 1,
+    brushRadius: 0.04,
+    excluded: new Set(),
+    pointer: null,
+    lastBox: null,
+    needsBaseRedraw: false,
+  };
+}
+
+function ensureManualCorrectionState(run = State.currentReportRun) {
+  const key = getRunManualKey(run);
+  if (!State.manualCorrection || State.manualCorrectionRunKey !== key) {
+    State.manualCorrection = createManualCorrectionState();
+    State.manualCorrectionRunKey = key;
+  }
+  return State.manualCorrection;
+}
+
+function isManualCorrectionActive(run = State.currentReportRun) {
+  return Boolean(run && State.reportCorrectionMode === 'manual');
+}
+
+function updateManualCorrectionPanel() {
+  const active = isManualCorrectionActive();
+  EL.manualCorrectionPanel?.classList.toggle('hidden', !active);
+  EL.manualCorrectionCanvas?.classList.toggle('hidden', !active);
+  if (!active) {
+    clearManualOverlay();
+    return;
+  }
+  const state = ensureManualCorrectionState();
+  if (EL.manualBrushRadius) EL.manualBrushRadius.value = String(Math.round(state.brushRadius * 100));
+  if (EL.manualTransformStatus) {
+    EL.manualTransformStatus.textContent = `偏移 ${state.offsetX.toFixed(2)} / ${state.offsetY.toFixed(2)} · 缩放 ${state.scaleX.toFixed(2)} / ${state.scaleY.toFixed(2)}`;
+  }
+  if (EL.manualExcludedStatus) {
+    EL.manualExcludedStatus.textContent = `已涂抹 ${state.excluded.size.toLocaleString()} 点`;
+  }
+  syncManualOverlayCanvas();
+  drawManualOverlay();
+}
+
+function resolveCorrectionMode(run, requestedMode = State.reportCorrectionMode) {
+  if (requestedMode === 'manual') return 'manual';
+  if (requestedMode !== 'auto') return requestedMode || 'raw';
+  return getMetricForRun(run).autoCorrectionMode || 'raw';
+}
+
+function applyA4Correction(pos, run, requestedMode = State.reportCorrectionMode) {
+  const mode = resolveCorrectionMode(run, requestedMode);
+  if (!run || mode === 'raw') return pos;
+
+  const metric = getMetricForRun(run);
+  if (mode === 'manual') {
+    const state = ensureManualCorrectionState(run);
+    return {
+      x: clamp01(0.5 + (pos.x - 0.5) * state.scaleX + state.offsetX),
+      y: clamp01(0.5 + (pos.y - 0.5) * state.scaleY + state.offsetY),
+    };
+  }
+
+  if (mode === 'shift' && metric.meanX != null && metric.meanY != null) {
+    return {
+      x: clamp01(pos.x + (0.5 - metric.meanX)),
+      y: clamp01(pos.y + (0.5 - metric.meanY)),
+    };
+  }
+
+  if (mode === 'stretch') {
+    const bounds = metric.robustBounds || {};
+    const width = Number(bounds.maxX) - Number(bounds.minX);
+    const height = Number(bounds.maxY) - Number(bounds.minY);
+    if (width > 0.08 && height > 0.08) {
+      const margin = 0.04;
+      const scale = 1 - margin * 2;
+      return {
+        x: clamp01(margin + ((pos.x - bounds.minX) / width) * scale),
+        y: clamp01(margin + ((pos.y - bounds.minY) / height) * scale),
+      };
+    }
+  }
+
+  return pos;
 }
 
 function legacyScreenToCanvasMapper(canvas, img) {
@@ -1480,23 +2424,368 @@ function legacyScreenToCanvasMapper(canvas, img) {
 }
 
 function a4PointToCanvas(point, canvas, run) {
-  const plane = run?.a4Plane || State.calibrationSession?.a4Plane || State.currentA4Plane;
-  if (!['a4-paper', 'a4-landscape-paper'].includes(run?.coordinateSystem) || !plane) return null;
-  const paperPoint = Number.isFinite(point.a4X) && Number.isFinite(point.a4Y)
-    ? { x: point.a4X, y: point.a4Y }
-    : virtualScreenToA4(point.x, point.y, plane);
+  if (!['a4-paper', 'a4-landscape-paper'].includes(run?.coordinateSystem)) return null;
+  const paperPoint = getRawA4Position(point, run);
+  if (!paperPoint) return null;
+  const corrected = applyA4Correction(paperPoint, run);
 
   return {
-    x: clamp01(paperPoint.x) * canvas.width,
-    y: clamp01(paperPoint.y) * canvas.height,
+    x: clamp01(corrected.x) * canvas.width,
+    y: clamp01(corrected.y) * canvas.height,
   };
 }
 
+function getRawA4Position(point, run) {
+  const plane = run?.a4Plane || State.calibrationSession?.a4Plane || State.currentA4Plane;
+  if (Number.isFinite(point.a4X) && Number.isFinite(point.a4Y)) {
+    return { x: clamp01(point.a4X), y: clamp01(point.a4Y) };
+  }
+  if (plane && Number.isFinite(Number(point?.x)) && Number.isFinite(Number(point?.y))) {
+    const mapped = virtualScreenToA4(Number(point.x), Number(point.y), plane);
+    return { x: mapped.x, y: mapped.y };
+  }
+  if (Number.isFinite(Number(point?.x)) && Number.isFinite(Number(point?.y))) {
+    return {
+      x: clamp01(Number(point.x) / Math.max(1, window.innerWidth)),
+      y: clamp01(Number(point.y) / Math.max(1, window.innerHeight)),
+    };
+  }
+  return null;
+}
+
 function createPointToCanvasMapper(canvas, img, run) {
+  if (resolveCorrectionMode(run, State.reportCorrectionMode) === 'manual') {
+    return point => {
+      const raw = getRawA4Position(point, run);
+      if (!raw) return null;
+      const corrected = applyA4Correction(raw, run, 'manual');
+      return {
+        x: clamp01(corrected.x) * canvas.width,
+        y: clamp01(corrected.y) * canvas.height,
+      };
+    };
+  }
   if (['a4-paper', 'a4-landscape-paper'].includes(run?.coordinateSystem)) {
     return point => a4PointToCanvas(point, canvas, run);
   }
   return legacyScreenToCanvasMapper(canvas, img);
+}
+
+function clearManualOverlay() {
+  const overlay = EL.manualCorrectionCanvas;
+  if (!overlay) return;
+  const ctx = overlay.getContext('2d');
+  ctx.clearRect(0, 0, overlay.width || 1, overlay.height || 1);
+}
+
+function syncManualOverlayCanvas() {
+  const overlay = EL.manualCorrectionCanvas;
+  const canvas = EL.reportCanvas;
+  if (!overlay || !canvas || !isManualCorrectionActive()) return false;
+  const canvasRect = canvas.getBoundingClientRect();
+  const parentRect = canvas.parentElement.getBoundingClientRect();
+  if (!canvasRect.width || !canvasRect.height) return false;
+  const ratio = window.devicePixelRatio || 1;
+  overlay.style.left = `${canvasRect.left - parentRect.left}px`;
+  overlay.style.top = `${canvasRect.top - parentRect.top}px`;
+  overlay.style.width = `${canvasRect.width}px`;
+  overlay.style.height = `${canvasRect.height}px`;
+  overlay.width = Math.max(1, Math.round(canvasRect.width * ratio));
+  overlay.height = Math.max(1, Math.round(canvasRect.height * ratio));
+  const ctx = overlay.getContext('2d');
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  return true;
+}
+
+function getCanvasRelativePosition(event) {
+  const canvas = EL.reportCanvas;
+  if (!canvas) return null;
+  const rect = canvas.getBoundingClientRect();
+  if (!rect.width || !rect.height) return null;
+  return {
+    x: clamp01((event.clientX - rect.left) / rect.width),
+    y: clamp01((event.clientY - rect.top) / rect.height),
+    rect,
+  };
+}
+
+function drawManualOverlay() {
+  const overlay = EL.manualCorrectionCanvas;
+  const run = State.currentReportRun;
+  if (!overlay || !run || !isManualCorrectionActive() || !syncManualOverlayCanvas()) return;
+  const ctx = overlay.getContext('2d');
+  const width = overlay.getBoundingClientRect().width;
+  const height = overlay.getBoundingClientRect().height;
+  ctx.clearRect(0, 0, width, height);
+
+  const state = ensureManualCorrectionState(run);
+  const entries = getManualOverlayEntries(run);
+  const step = Math.max(1, Math.floor(entries.length / 900));
+  entries.forEach(({ point, index, corrected }, entryIndex) => {
+    if (entryIndex % step !== 0) return;
+    const excluded = state.excluded.has(getPointIdentity(point, index));
+    ctx.beginPath();
+    ctx.arc(corrected.x * width, corrected.y * height, excluded ? 4 : 2.2, 0, Math.PI * 2);
+    ctx.fillStyle = excluded ? 'rgba(200,66,63,0.86)' : 'rgba(37,84,166,0.36)';
+    ctx.fill();
+    if (excluded) {
+      ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  });
+
+  const box = getManualTransformBox(run, entries);
+  state.lastBox = box;
+  if (box) drawManualTransformBox(ctx, box, width, height);
+
+  const pointer = state.pointer?.current;
+  const tool = EL.manualCorrectionTool?.value || 'transform';
+  if (pointer && (tool === 'erase' || tool === 'restore')) {
+    ctx.beginPath();
+    ctx.arc(pointer.x * width, pointer.y * height, state.brushRadius * Math.min(width, height), 0, Math.PI * 2);
+    ctx.strokeStyle = tool === 'erase' ? 'rgba(200,66,63,0.9)' : 'rgba(31,122,92,0.9)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+}
+
+function getManualOverlayEntries(run = State.currentReportRun) {
+  return getTimeFilteredReportPoints(run).map(({ point, index }) => {
+    const raw = getRawA4Position(point, run);
+    if (!raw) return null;
+    return {
+      point,
+      index,
+      raw,
+      corrected: applyA4Correction(raw, run, 'manual'),
+    };
+  }).filter(Boolean);
+}
+
+function getManualTransformBox(run = State.currentReportRun, preparedEntries = null) {
+  const state = ensureManualCorrectionState(run);
+  const entries = preparedEntries || getManualOverlayEntries(run);
+  const active = entries.filter(({ point, index }) => !state.excluded.has(getPointIdentity(point, index)));
+  if (!active.length) return null;
+  let minX = 1, minY = 1, maxX = 0, maxY = 0;
+  active.forEach(({ corrected }) => {
+    minX = Math.min(minX, corrected.x);
+    minY = Math.min(minY, corrected.y);
+    maxX = Math.max(maxX, corrected.x);
+    maxY = Math.max(maxY, corrected.y);
+  });
+  const pad = 0.012;
+  return {
+    minX: clamp01(minX - pad),
+    minY: clamp01(minY - pad),
+    maxX: clamp01(maxX + pad),
+    maxY: clamp01(maxY + pad),
+  };
+}
+
+function getManualBoxHandles(box) {
+  if (!box) return [];
+  const cx = (box.minX + box.maxX) / 2;
+  const cy = (box.minY + box.maxY) / 2;
+  return [
+    { id: 'nw', x: box.minX, y: box.minY, cursor: 'nwse-resize' },
+    { id: 'n', x: cx, y: box.minY, cursor: 'ns-resize' },
+    { id: 'ne', x: box.maxX, y: box.minY, cursor: 'nesw-resize' },
+    { id: 'e', x: box.maxX, y: cy, cursor: 'ew-resize' },
+    { id: 'se', x: box.maxX, y: box.maxY, cursor: 'nwse-resize' },
+    { id: 's', x: cx, y: box.maxY, cursor: 'ns-resize' },
+    { id: 'sw', x: box.minX, y: box.maxY, cursor: 'nesw-resize' },
+    { id: 'w', x: box.minX, y: cy, cursor: 'ew-resize' },
+  ];
+}
+
+function drawManualTransformBox(ctx, box, width, height) {
+  const x = box.minX * width;
+  const y = box.minY * height;
+  const w = Math.max(1, (box.maxX - box.minX) * width);
+  const h = Math.max(1, (box.maxY - box.minY) * height);
+  ctx.save();
+  ctx.strokeStyle = 'rgba(23,32,47,0.86)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([7, 5]);
+  ctx.strokeRect(x, y, w, h);
+  ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(255,255,255,0.96)';
+  ctx.strokeStyle = 'rgba(37,84,166,0.95)';
+  ctx.lineWidth = 2;
+  getManualBoxHandles(box).forEach(handle => {
+    const hx = handle.x * width;
+    const hy = handle.y * height;
+    ctx.beginPath();
+    ctx.rect(hx - 5, hy - 5, 10, 10);
+    ctx.fill();
+    ctx.stroke();
+  });
+  ctx.fillStyle = 'rgba(23,32,47,0.72)';
+  ctx.font = '12px Inter, Arial, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'bottom';
+  ctx.fillText(localizeText('拖框内移动，拖控制点拉伸'), x, Math.max(14, y - 8));
+  ctx.restore();
+}
+
+function getManualTransformHit(normPos) {
+  const state = ensureManualCorrectionState();
+  const box = state.lastBox || getManualTransformBox();
+  if (!box) return { action: 'move', handle: null, box: null };
+  const rect = EL.reportCanvas.getBoundingClientRect();
+  const threshold = 12 / Math.max(1, Math.min(rect.width, rect.height));
+  const handle = getManualBoxHandles(box).find(item =>
+    Math.hypot(item.x - normPos.x, item.y - normPos.y) <= threshold
+  );
+  if (handle) return { action: 'scale', handle: handle.id, box };
+  const inside = normPos.x >= box.minX && normPos.x <= box.maxX && normPos.y >= box.minY && normPos.y <= box.maxY;
+  return { action: inside ? 'move' : 'move', handle: null, box };
+}
+
+function updateManualCursor(normPos = null) {
+  const overlay = EL.manualCorrectionCanvas;
+  if (!overlay || !isManualCorrectionActive()) return;
+  const tool = EL.manualCorrectionTool?.value || 'transform';
+  if (tool === 'erase' || tool === 'restore') {
+    overlay.style.cursor = 'crosshair';
+    return;
+  }
+  if (!normPos) {
+    overlay.style.cursor = 'move';
+    return;
+  }
+  const hit = getManualTransformHit(normPos);
+  if (hit.action === 'scale' && hit.handle) {
+    overlay.style.cursor = getManualBoxHandles(hit.box).find(handle => handle.id === hit.handle)?.cursor || 'move';
+  } else {
+    overlay.style.cursor = 'move';
+  }
+}
+
+function applyManualBrushAt(normPos, restore = false) {
+  const run = State.currentReportRun;
+  if (!run || !isManualCorrectionActive()) return;
+  const state = ensureManualCorrectionState(run);
+  const radius = state.brushRadius;
+  getTimeFilteredReportPoints(run).forEach(({ point, index }) => {
+    const raw = getRawA4Position(point, run);
+    if (!raw) return;
+    const corrected = applyA4Correction(raw, run, 'manual');
+    if (Math.hypot(corrected.x - normPos.x, corrected.y - normPos.y) <= radius) {
+      const key = getPointIdentity(point, index);
+      if (restore) state.excluded.delete(key);
+      else state.excluded.add(key);
+    }
+  });
+  state.needsBaseRedraw = true;
+  updateManualCorrectionPanel();
+}
+
+function handleManualPointerDown(event) {
+  if (!isManualCorrectionActive()) return;
+  const pos = getCanvasRelativePosition(event);
+  if (!pos) return;
+  const state = ensureManualCorrectionState();
+  const tool = EL.manualCorrectionTool?.value || 'transform';
+  const hit = tool === 'transform' ? getManualTransformHit(pos) : { action: tool, handle: null };
+  state.pointer = {
+    start: pos,
+    current: pos,
+    offsetX: state.offsetX,
+    offsetY: state.offsetY,
+    scaleX: state.scaleX,
+    scaleY: state.scaleY,
+    action: hit.action,
+    handle: hit.handle,
+    box: hit.box,
+  };
+  EL.manualCorrectionCanvas.setPointerCapture?.(event.pointerId);
+  if (tool === 'erase' || tool === 'restore') {
+    applyManualBrushAt(pos, tool === 'restore');
+  }
+  event.preventDefault();
+}
+
+function handleManualPointerMove(event) {
+  if (!isManualCorrectionActive()) return;
+  const state = ensureManualCorrectionState();
+  const pos = getCanvasRelativePosition(event);
+  if (!pos) return;
+  if (!state.pointer?.start) {
+    state.pointer = { current: pos };
+    updateManualCursor(pos);
+    drawManualOverlay();
+    return;
+  }
+  state.pointer.current = pos;
+  const tool = EL.manualCorrectionTool?.value || 'transform';
+  const dx = pos.x - state.pointer.start.x;
+  const dy = pos.y - state.pointer.start.y;
+  if (tool === 'transform' && state.pointer.action === 'move') {
+    state.offsetX = Math.max(-1, Math.min(1, state.pointer.offsetX + dx));
+    state.offsetY = Math.max(-1, Math.min(1, state.pointer.offsetY + dy));
+    state.needsBaseRedraw = true;
+    updateManualCorrectionPanel();
+  } else if (tool === 'transform' && state.pointer.action === 'scale') {
+    applyManualBoxScaleFromDrag(state, dx, dy);
+    state.needsBaseRedraw = true;
+    updateManualCorrectionPanel();
+  } else if (tool === 'erase' || tool === 'restore') {
+    applyManualBrushAt(pos, tool === 'restore');
+  } else {
+    drawManualOverlay();
+  }
+  event.preventDefault();
+}
+
+function applyManualBoxScaleFromDrag(state, dx, dy) {
+  const handle = state.pointer?.handle || '';
+  const box = state.pointer?.box;
+  if (!box || !handle) return;
+
+  const oldW = Math.max(0.001, box.maxX - box.minX);
+  const oldH = Math.max(0.001, box.maxY - box.minY);
+  const oldCx = (box.minX + box.maxX) / 2;
+  const oldCy = (box.minY + box.maxY) / 2;
+  const next = { ...box };
+  if (handle.includes('w')) next.minX += dx;
+  if (handle.includes('e')) next.maxX += dx;
+  if (handle.includes('n')) next.minY += dy;
+  if (handle.includes('s')) next.maxY += dy;
+
+  const minSize = 0.04;
+  if (next.maxX - next.minX < minSize) {
+    if (handle.includes('w')) next.minX = next.maxX - minSize;
+    else next.maxX = next.minX + minSize;
+  }
+  if (next.maxY - next.minY < minSize) {
+    if (handle.includes('n')) next.minY = next.maxY - minSize;
+    else next.maxY = next.minY + minSize;
+  }
+
+  const newW = Math.max(minSize, next.maxX - next.minX);
+  const newH = Math.max(minSize, next.maxY - next.minY);
+  const newCx = (next.minX + next.maxX) / 2;
+  const newCy = (next.minY + next.maxY) / 2;
+  const fx = handle === 'n' || handle === 's' ? 1 : newW / oldW;
+  const fy = handle === 'e' || handle === 'w' ? 1 : newH / oldH;
+
+  state.scaleX = Math.max(0.2, Math.min(4, state.pointer.scaleX * fx));
+  state.scaleY = Math.max(0.2, Math.min(4, state.pointer.scaleY * fy));
+  state.offsetX = Math.max(-1, Math.min(1, newCx - 0.5 - (oldCx - 0.5 - state.pointer.offsetX) * fx));
+  state.offsetY = Math.max(-1, Math.min(1, newCy - 0.5 - (oldCy - 0.5 - state.pointer.offsetY) * fy));
+}
+
+function handleManualPointerUp(event) {
+  if (!State.manualCorrection) return;
+  const shouldRedraw = State.manualCorrection.needsBaseRedraw;
+  State.manualCorrection.pointer = null;
+  State.manualCorrection.needsBaseRedraw = false;
+  EL.manualCorrectionCanvas?.releasePointerCapture?.(event.pointerId);
+  updateManualCorrectionPanel();
+  if (shouldRedraw) redrawCurrentVisualization();
 }
 
 // ─── 热力图（Canvas 原生实现）───────────────────────────────────
@@ -1528,6 +2817,7 @@ function drawHeatmap(options = {}) {
         drawReportMessage(canvas, '当前时间段数据点不足', !includeBackground);
       }
       updateReportRangeStatus(run, data.length);
+      drawManualOverlay();
       options.onComplete?.(canvas);
       return;
     }
@@ -1620,6 +2910,7 @@ function drawHeatmap(options = {}) {
     ctx.drawImage(tmp, 0, 0);
     if (includeLegend) drawLegend(ctx, canvas.width, canvas.height);
     updateReportRangeStatus(run, data.length);
+    drawManualOverlay();
     options.onComplete?.(canvas);
   };
   img.src = imageSrc;
@@ -1654,6 +2945,7 @@ function drawGazePlot(options = {}) {
         drawReportMessage(canvas, '当前时间段数据点不足', !includeBackground);
       }
       updateReportRangeStatus(run, data.length);
+      drawManualOverlay();
       options.onComplete?.(canvas);
       return;
     }
@@ -1670,9 +2962,10 @@ function drawGazePlot(options = {}) {
     const isPlaybackFrame = playbackProgress !== null;
     if (pts.length < 2) {
       if (!options.silentEmpty) {
-        drawReportMessage(canvas, '纸面有效数据点不足', !includeBackground);
+        drawReportMessage(canvas, '有效坐标数据点不足', !includeBackground);
       }
       updateReportRangeStatus(run, data.length);
+      drawManualOverlay();
       options.onComplete?.(canvas);
       return;
     }
@@ -1746,6 +3039,7 @@ function drawGazePlot(options = {}) {
       ctx.fill();
     }
     updateReportRangeStatus(run, data.length);
+    drawManualOverlay();
     options.onComplete?.(canvas);
   };
   img.src = imageSrc;
@@ -1775,12 +3069,568 @@ function drawLegend(ctx, w, h) {
   ctx.font         = '10px Inter,sans-serif';
   ctx.textAlign    = 'left';
   ctx.textBaseline = 'top';
-  ctx.fillText('低', x, y + lh + 3);
+  ctx.fillText(localizeText('低'), x, y + lh + 3);
   ctx.textAlign = 'right';
-  ctx.fillText('高', x + lw, y + lh + 3);
+  ctx.fillText(localizeText('高'), x + lw, y + lh + 3);
   ctx.textAlign    = 'center';
   ctx.fillStyle    = 'rgba(255,255,255,0.55)';
-  ctx.fillText('注意力密度', x + lw / 2, y - 14);
+  ctx.fillText(localizeText('注意力密度'), x + lw / 2, y - 14);
+}
+
+// ─── 聚合数据分析 ────────────────────────────────────────────────
+const ANALYSIS_ZONE_LABELS = [
+  '左上', '中上', '右上',
+  '左中', '中心', '右中',
+  '左下', '中下', '右下',
+];
+
+function getAnalysisZoneLabel(index) {
+  return localizeText(ANALYSIS_ZONE_LABELS[index] || '');
+}
+
+function formatMetric(value, digits = 1, fallback = '—') {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return number.toFixed(digits);
+}
+
+function formatPercent(value, digits = 1) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return '—';
+  return `${(number * 100).toFixed(digits)}%`;
+}
+
+function getRunImageName(run) {
+  return String(run?.image?.name || run?.image?.id || '未命名图片');
+}
+
+function getRunImageKey(run) {
+  return String(run?.image?.id || getRunImageName(run)).toLowerCase();
+}
+
+function getImageConditionMeta(image = {}) {
+  const key = String(image.id || image.name || '').trim().toLowerCase();
+  if (key === 'a2' || key === 'b2') return { condition: 'experiment', label: '实验组' };
+  if (key === 'a1' || key === 'b1') return { condition: 'control', label: '对照组' };
+  if (image.condition === 'experiment') return { condition: 'experiment', label: '实验组' };
+  if (image.condition === 'control') return { condition: 'control', label: '对照组' };
+  if (image.conditionLabel) return { condition: String(image.condition || ''), label: String(image.conditionLabel) };
+  return { condition: String(image.condition || ''), label: '未分组' };
+}
+
+function getRunConditionLabel(run) {
+  return getImageConditionMeta(run?.image).label;
+}
+
+function getPointA4Position(point, run) {
+  const a4X = Number(point?.a4X);
+  const a4Y = Number(point?.a4Y);
+  if (Number.isFinite(a4X) && Number.isFinite(a4Y)) {
+    return { x: clamp01(a4X), y: clamp01(a4Y) };
+  }
+
+  const plane = run?.a4Plane;
+  if (plane && Number.isFinite(Number(point?.x)) && Number.isFinite(Number(point?.y))) {
+    const mapped = virtualScreenToA4(Number(point.x), Number(point.y), plane);
+    return { x: mapped.x, y: mapped.y };
+  }
+
+  return null;
+}
+
+function getA4ZoneIndex(pos) {
+  const col = Math.min(2, Math.max(0, Math.floor(pos.x * 3)));
+  const row = Math.min(2, Math.max(0, Math.floor(pos.y * 3)));
+  return row * 3 + col;
+}
+
+function percentile(values, ratio) {
+  if (!values.length) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const index = (sorted.length - 1) * clamp01(ratio);
+  const low = Math.floor(index);
+  const high = Math.ceil(index);
+  if (low === high) return sorted[low];
+  return sorted[low] + (sorted[high] - sorted[low]) * (index - low);
+}
+
+function describeAnomalyFlags(flags) {
+  if (!flags.length) return '正常';
+  const labels = {
+    lowValid: '有效点偏低',
+    severeOffset: '严重偏移',
+    edgeClipped: '边缘截断',
+    tooShort: '样本过少',
+  };
+  return flags.map(flag => labels[flag] || flag).join('、');
+}
+
+function getRepairSuggestion(flags) {
+  if (!flags.length) return '无需修正';
+  if (flags.includes('tooShort')) return '样本过少，建议排除该记录或补采';
+  if (flags.includes('lowValid') && flags.includes('edgeClipped')) return '优先仅使用有效点；不建议强修正';
+  if (flags.includes('severeOffset')) return '疑似坐标系整体偏移，可尝试中心平移修正';
+  if (flags.includes('lowValid')) return '建议筛除打印区域外点后再分析';
+  if (flags.includes('edgeClipped')) return '疑似映射边界截断，谨慎拉伸';
+  return '人工复核';
+}
+
+function getAutoCorrectionMode(metric) {
+  if (!metric || !metric.anomalyFlags?.length) return 'raw';
+  if (metric.anomalyFlags.includes('tooShort')) return 'raw';
+  if (metric.anomalyFlags.includes('severeOffset')) return 'shift';
+  return 'raw';
+}
+
+function computeRunMetrics(record) {
+  const { session, run, trialIndex } = record;
+  const points = Array.isArray(run.points) ? run.points : [];
+  const zoneCounts = Array(9).fill(0);
+  const duration = Math.max(0, Number(run.duration) || 0);
+  let validCount = 0;
+  let sumX = 0;
+  let sumY = 0;
+  let centerDistanceSum = 0;
+  let pathLengthMm = 0;
+  let previousPos = null;
+  const validPositions = [];
+
+  points.forEach(point => {
+    const pos = getPointA4Position(point, run);
+    if (!pos || point.onPaper === false) return;
+
+    validCount += 1;
+    validPositions.push(pos);
+    sumX += pos.x;
+    sumY += pos.y;
+    centerDistanceSum += Math.hypot(pos.x - 0.5, pos.y - 0.5);
+    zoneCounts[getA4ZoneIndex(pos)] += 1;
+
+    if (previousPos) {
+      const dxMm = (pos.x - previousPos.x) * A4_SIZE_MM.width;
+      const dyMm = (pos.y - previousPos.y) * A4_SIZE_MM.height;
+      pathLengthMm += Math.hypot(dxMm, dyMm);
+    }
+    previousPos = pos;
+  });
+
+  const xs = validPositions.map(pos => pos.x);
+  const ys = validPositions.map(pos => pos.y);
+  const p02x = percentile(xs, 0.02);
+  const p98x = percentile(xs, 0.98);
+  const p02y = percentile(ys, 0.02);
+  const p98y = percentile(ys, 0.98);
+  const robustWidth = p02x == null || p98x == null ? 0 : Math.max(0, p98x - p02x);
+  const robustHeight = p02y == null || p98y == null ? 0 : Math.max(0, p98y - p02y);
+  const robustCoverage = robustWidth * robustHeight;
+  const edgeRate = validPositions.length
+    ? validPositions.filter(pos => pos.x <= 0.02 || pos.x >= 0.98 || pos.y <= 0.02 || pos.y >= 0.98).length / validPositions.length
+    : 0;
+  const meanX = validCount ? sumX / validCount : null;
+  const meanY = validCount ? sumY / validCount : null;
+  const centerBias = validCount ? centerDistanceSum / validCount : null;
+  const anomalyFlags = [];
+  if (points.length < 120 || duration < 5) anomalyFlags.push('tooShort');
+  if (points.length && validCount / points.length < 0.65) anomalyFlags.push('lowValid');
+  if (centerBias != null && centerBias > 0.38 && robustCoverage < 0.28) anomalyFlags.push('severeOffset');
+  if (edgeRate > 0.22) anomalyFlags.push('edgeClipped');
+  const coverageNote = validCount >= 120 && (robustWidth < 0.45 || robustHeight < 0.45 || robustCoverage < 0.24)
+    ? '视线集中在局部区域；这可能是正常观看行为，必要时可用范围拉伸做探索性预览。'
+    : '';
+  const offsetNote = centerBias != null && centerBias > 0.22 && !anomalyFlags.includes('severeOffset')
+    ? '平均视线位置偏离中心；这可能来自观看内容本身，建议结合刺激图人工判断。'
+    : '';
+
+  return {
+    participantId: session.id,
+    participantLabel: session.label,
+    trialId: run.id,
+    trialIndex,
+    imageId: String(run.image?.id || ''),
+    imageName: getRunImageName(run),
+    condition: getRunConditionLabel(run),
+    startedAt: run.startedAt || '',
+    duration,
+    points: points.length,
+    validPoints: validCount,
+    validRate: points.length ? validCount / points.length : 0,
+    fps: duration > 0 ? points.length / duration : 0,
+    meanX,
+    meanY,
+    centerBias,
+    robustBounds: { minX: p02x, maxX: p98x, minY: p02y, maxY: p98y },
+    robustWidth,
+    robustHeight,
+    robustCoverage,
+    coverageNote,
+    offsetNote,
+    edgeRate,
+    anomalyFlags,
+    anomalyLabel: describeAnomalyFlags(anomalyFlags),
+    repairSuggestion: getRepairSuggestion(anomalyFlags),
+    autoCorrectionMode: getAutoCorrectionMode({ anomalyFlags }),
+    pathLengthMm,
+    zoneCounts,
+  };
+}
+
+function aggregateMetrics(metrics) {
+  const zoneCounts = Array(9).fill(0);
+  const participants = new Set();
+  let durationSum = 0;
+  let pointSum = 0;
+  let validPointSum = 0;
+  let weightedX = 0;
+  let weightedY = 0;
+  let weightedCenterBias = 0;
+  let pathLengthSum = 0;
+  let anomalyRuns = 0;
+
+  metrics.forEach(metric => {
+    participants.add(metric.participantId);
+    durationSum += metric.duration;
+    pointSum += metric.points;
+    validPointSum += metric.validPoints;
+    pathLengthSum += metric.pathLengthMm;
+    if (metric.meanX != null) weightedX += metric.meanX * metric.validPoints;
+    if (metric.meanY != null) weightedY += metric.meanY * metric.validPoints;
+    if (metric.centerBias != null) weightedCenterBias += metric.centerBias * metric.validPoints;
+    metric.zoneCounts.forEach((count, index) => { zoneCounts[index] += count; });
+    if (metric.anomalyFlags?.length) anomalyRuns += 1;
+  });
+
+  return {
+    runs: metrics.length,
+    participants: participants.size,
+    points: pointSum,
+    validPoints: validPointSum,
+    validRate: pointSum ? validPointSum / pointSum : 0,
+    durationTotal: durationSum,
+    durationAvg: metrics.length ? durationSum / metrics.length : 0,
+    fpsAvg: durationSum > 0 ? pointSum / durationSum : 0,
+    meanX: validPointSum ? weightedX / validPointSum : null,
+    meanY: validPointSum ? weightedY / validPointSum : null,
+    centerBias: validPointSum ? weightedCenterBias / validPointSum : null,
+    pathLengthAvgMm: metrics.length ? pathLengthSum / metrics.length : 0,
+    anomalyRuns,
+    zoneCounts,
+  };
+}
+
+function groupMetrics(metrics, getKey, getLabel = getKey) {
+  const groups = new Map();
+  metrics.forEach(metric => {
+    const key = getKey(metric);
+    if (!groups.has(key)) groups.set(key, { key, label: getLabel(metric), metrics: [] });
+    groups.get(key).metrics.push(metric);
+  });
+
+  return Array.from(groups.values())
+    .map(group => ({ ...group, summary: aggregateMetrics(group.metrics) }))
+    .sort((a, b) => b.summary.runs - a.summary.runs || a.label.localeCompare(b.label, getDisplayLocale()));
+}
+
+function getAllAnalysisRecords() {
+  return getAllTrackingRuns().filter(record => Array.isArray(record.run.points));
+}
+
+function getScopedAnalysisRecords() {
+  const scope = EL.analysisScopeSelect?.value || 'all';
+  const imageFilter = EL.analysisImageSelect?.value || 'all';
+  let records = getAllAnalysisRecords();
+
+  if (scope === 'session' && State.selectedSessionId) {
+    records = records.filter(record => record.session.id === State.selectedSessionId);
+  } else if (scope === 'run' && State.currentReportRun) {
+    records = records.filter(record => record.run === State.currentReportRun || record.run.id === State.currentReportRun.id);
+  }
+
+  if (imageFilter !== 'all') {
+    records = records.filter(record => getRunImageKey(record.run) === imageFilter);
+  }
+
+  return records;
+}
+
+function updateAnalysisImageOptions() {
+  if (!EL.analysisImageSelect) return;
+  const previous = EL.analysisImageSelect.value || 'all';
+  const options = groupMetrics(
+    getAllAnalysisRecords().map(computeRunMetrics),
+    metric => String(metric.imageId || metric.imageName).toLowerCase(),
+    metric => metric.imageName
+  );
+
+  EL.analysisImageSelect.innerHTML = '<option value="all">全部图片</option>';
+  options.forEach(group => {
+    const option = document.createElement('option');
+    option.value = group.key;
+    option.textContent = `${group.label} (${group.summary.runs})`;
+    EL.analysisImageSelect.appendChild(option);
+  });
+  EL.analysisImageSelect.value = Array.from(EL.analysisImageSelect.options).some(option => option.value === previous)
+    ? previous
+    : 'all';
+}
+
+function buildAnalysisInsights(snapshot) {
+  const insights = [];
+  const { overall, conditions, images } = snapshot;
+  if (!overall.runs) return ['暂无可分析记录。'];
+
+  insights.push(`共 ${overall.participants} 名参与者、${overall.runs} 次追踪、${overall.points.toLocaleString()} 个采样点。`);
+  if (overall.anomalyRuns) {
+    insights.push(`筛查出 ${overall.anomalyRuns} 次疑似技术异常记录，局部凝视不会单独计为异常。`);
+  }
+  insights.push(`打印区域有效点比例为 ${formatPercent(overall.validRate)}，平均采样频率 ${formatMetric(overall.fpsAvg, 1)} Hz。`);
+
+  const topZoneIndex = overall.zoneCounts.reduce((best, count, index, arr) => count > arr[best] ? index : best, 0);
+  const topZoneCount = overall.zoneCounts[topZoneIndex] || 0;
+  if (topZoneCount) {
+    insights.push(`视线最集中区域是「${ANALYSIS_ZONE_LABELS[topZoneIndex]}」，占有效点 ${formatPercent(topZoneCount / Math.max(1, overall.validPoints))}。`);
+  }
+
+  if (conditions.length >= 2) {
+    const sorted = [...conditions].sort((a, b) => b.summary.validRate - a.summary.validRate);
+    const diff = sorted[0].summary.validRate - sorted[sorted.length - 1].summary.validRate;
+    insights.push(`条件有效率最高的是「${sorted[0].label}」，比最低条件高 ${formatPercent(diff)}。`);
+  }
+
+  if (images.length) {
+    const longestPath = [...images].sort((a, b) => b.summary.pathLengthAvgMm - a.summary.pathLengthAvgMm)[0];
+    insights.push(`平均视线移动路径最长的图片是「${longestPath.label}」，约 ${formatMetric(longestPath.summary.pathLengthAvgMm, 0)} mm。`);
+  }
+
+  return insights;
+}
+
+function createAnalysisSnapshot() {
+  const records = getScopedAnalysisRecords();
+  const metrics = records.map(computeRunMetrics);
+  const conditions = groupMetrics(metrics, metric => metric.condition);
+  const images = groupMetrics(metrics, metric => String(metric.imageId || metric.imageName).toLowerCase(), metric => metric.imageName);
+  const overall = aggregateMetrics(metrics);
+  const snapshot = {
+    createdAt: new Date().toISOString(),
+    scope: EL.analysisScopeSelect?.value || 'all',
+    imageFilter: EL.analysisImageSelect?.value || 'all',
+    overall,
+    runs: metrics,
+    anomalies: metrics.filter(metric => metric.anomalyFlags.length),
+    conditions,
+    images,
+    insights: [],
+  };
+  snapshot.insights = buildAnalysisInsights(snapshot);
+  return snapshot;
+}
+
+function renderAnalysisSummary(overall) {
+  const cards = [
+    ['参与者', overall.participants.toLocaleString(), 'people'],
+    ['追踪记录', overall.runs.toLocaleString(), 'runs'],
+    ['采样点', overall.points.toLocaleString(), 'points'],
+    ['有效点比例', formatPercent(overall.validRate), 'valid'],
+    ['疑似异常', overall.anomalyRuns.toLocaleString(), 'anomaly'],
+    ['平均频率', `${formatMetric(overall.fpsAvg, 1)} Hz`, 'fps'],
+  ];
+  EL.analysisSummaryGrid.innerHTML = cards.map(([label, value, tone]) => `
+    <div class="analysis-summary-card analysis-tone-${tone}">
+      <span>${label}</span>
+      <strong>${value}</strong>
+    </div>
+  `).join('');
+}
+
+function renderAnalysisTable(tbody, groups, mode) {
+  tbody.innerHTML = '';
+  if (!groups.length) {
+    tbody.innerHTML = '<tr><td colspan="6">暂无数据</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = groups.map(group => {
+    const s = group.summary;
+    if (mode === 'image') {
+      const condition = group.metrics[0]?.condition || '未分组';
+      return `
+        <tr>
+          <td>${escapeHtml(group.label)}</td>
+          <td>${escapeHtml(condition)}</td>
+          <td>${s.runs}</td>
+          <td>${formatPercent(s.validRate)}</td>
+          <td>${s.meanX == null ? '—' : `${formatMetric(s.meanX, 2)} / ${formatMetric(s.meanY, 2)}`}</td>
+          <td>${formatMetric(s.pathLengthAvgMm, 0)} mm</td>
+        </tr>
+      `;
+    }
+
+    return `
+      <tr>
+        <td>${escapeHtml(group.label)}</td>
+        <td>${s.runs}</td>
+        <td>${s.points.toLocaleString()}</td>
+        <td>${formatPercent(s.validRate)}</td>
+        <td>${formatMetric(s.durationAvg, 1)} s</td>
+        <td>${formatMetric(s.centerBias, 2)}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderAnalysisZones(overall) {
+  const max = Math.max(1, ...overall.zoneCounts);
+  EL.analysisZoneTotal.textContent = `${overall.validPoints.toLocaleString()} 点`;
+  EL.analysisZoneGrid.innerHTML = overall.zoneCounts.map((count, index) => {
+    const ratio = overall.validPoints ? count / overall.validPoints : 0;
+    const intensity = count / max;
+    return `
+      <div class="analysis-zone-cell" style="--zone-alpha:${intensity.toFixed(3)}">
+        <span>${ANALYSIS_ZONE_LABELS[index]}</span>
+        <strong>${formatPercent(ratio, 1)}</strong>
+        <small>${count.toLocaleString()} 点</small>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderAnalysisAnomalies(anomalies) {
+  EL.analysisAnomalyCount.textContent = anomalies.length;
+  if (!anomalies.length) {
+    EL.analysisAnomalyTable.innerHTML = '<tr><td colspan="5">当前范围内未发现明显技术异常。局部凝视不单独计为异常。</td></tr>';
+    return;
+  }
+
+  EL.analysisAnomalyTable.innerHTML = anomalies
+    .sort((a, b) => b.anomalyFlags.length - a.anomalyFlags.length || b.centerBias - a.centerBias)
+    .map(metric => `
+      <tr>
+        <td>${escapeHtml(metric.participantLabel)} / ${escapeHtml(metric.imageName)}</td>
+        <td>${escapeHtml(metric.anomalyLabel)}</td>
+        <td>${formatMetric(metric.robustWidth, 2)} x ${formatMetric(metric.robustHeight, 2)}</td>
+        <td>${formatMetric(metric.centerBias, 2)}</td>
+        <td>${escapeHtml(metric.coverageNote || metric.offsetNote || metric.repairSuggestion)}</td>
+      </tr>
+    `).join('');
+}
+
+function updateAnalysisDashboard() {
+  if (!EL.analysisSummaryGrid) return;
+  updateAnalysisImageOptions();
+  const snapshot = createAnalysisSnapshot();
+  State.latestAnalysisSnapshot = snapshot;
+
+  const scopeText = {
+    all: '全部数据',
+    session: '当前参与者',
+    run: '当前记录',
+  }[snapshot.scope] || '全部数据';
+  EL.analysisScopeNote.textContent = `${scopeText} · ${snapshot.overall.runs} 次记录 · ${snapshot.overall.points.toLocaleString()} 点`;
+  EL.analysisConditionCount.textContent = snapshot.conditions.length;
+  EL.analysisImageCount.textContent = snapshot.images.length;
+
+  renderAnalysisSummary(snapshot.overall);
+  renderAnalysisTable(EL.analysisConditionTable, snapshot.conditions, 'condition');
+  renderAnalysisTable(EL.analysisImageTable, snapshot.images, 'image');
+  renderAnalysisZones(snapshot.overall);
+  renderAnalysisAnomalies(snapshot.anomalies);
+
+  EL.analysisInsightCount.textContent = snapshot.insights.length;
+  EL.analysisInsights.innerHTML = snapshot.insights.map(text => `<li>${escapeHtml(text)}</li>`).join('');
+}
+
+function analysisCsvRows(snapshot) {
+  const rows = [[
+    'level', 'key', 'label', 'participants', 'runs', 'points', 'valid_points',
+    'valid_rate', 'avg_duration_s', 'avg_fps', 'mean_x', 'mean_y',
+    'center_bias', 'avg_path_length_mm', 'anomaly_runs', 'robust_width',
+    'robust_height', 'edge_rate', 'anomaly_label', 'repair_suggestion', 'observation_note',
+  ]];
+  const pushSummary = (level, key, label, summary) => {
+    rows.push([
+      level,
+      key,
+      label,
+      summary.participants,
+      summary.runs,
+      summary.points,
+      summary.validPoints,
+      summary.validRate,
+      summary.durationAvg,
+      summary.fpsAvg,
+      summary.meanX ?? '',
+      summary.meanY ?? '',
+      summary.centerBias ?? '',
+      summary.pathLengthAvgMm,
+      summary.anomalyRuns ?? '',
+      '', '', '', '', '', '',
+    ]);
+  };
+
+  pushSummary('overall', 'all', '全部数据', snapshot.overall);
+  snapshot.conditions.forEach(group => pushSummary('condition', group.key, group.label, group.summary));
+  snapshot.images.forEach(group => pushSummary('image', group.key, group.label, group.summary));
+  snapshot.overall.zoneCounts.forEach((count, index) => {
+    rows.push([
+      'zone',
+      index + 1,
+      getAnalysisZoneLabel(index),
+      '',
+      '',
+      '',
+      count,
+      snapshot.overall.validPoints ? count / snapshot.overall.validPoints : 0,
+      '', '', '', '', '', '', '', '', '', '', '', '', '',
+    ]);
+  });
+
+  snapshot.anomalies.forEach(metric => {
+    rows.push([
+      'anomaly',
+      metric.trialId,
+      `${metric.participantLabel} / ${metric.imageName}`,
+      '',
+      1,
+      metric.points,
+      metric.validPoints,
+      metric.validRate,
+      metric.duration,
+      metric.fps,
+      metric.meanX ?? '',
+      metric.meanY ?? '',
+      metric.centerBias ?? '',
+      metric.pathLengthMm,
+      '',
+      metric.robustWidth,
+      metric.robustHeight,
+      metric.edgeRate,
+      metric.anomalyLabel,
+      metric.repairSuggestion,
+      metric.coverageNote || metric.offsetNote || '',
+    ]);
+  });
+
+  return rows.map(row => row.map(csvCell).join(',')).join('\n');
+}
+
+function exportAnalysisCSV() {
+  const snapshot = State.latestAnalysisSnapshot || createAnalysisSnapshot();
+  if (!snapshot.overall.runs) { alert('暂无可导出的分析数据'); return; }
+  downloadBlob(
+    `eye_tracking_analysis_${new Date().toISOString().replace(/[:.]/g, '-')}.csv`,
+    analysisCsvRows(snapshot),
+    'text/csv;charset=utf-8;'
+  );
+}
+
+function exportAnalysisJSON() {
+  const snapshot = State.latestAnalysisSnapshot || createAnalysisSnapshot();
+  if (!snapshot.overall.runs) { alert('暂无可导出的分析数据'); return; }
+  downloadBlob(
+    `eye_tracking_analysis_${new Date().toISOString().replace(/[:.]/g, '-')}.json`,
+    JSON.stringify(snapshot, null, 2),
+    'application/json;charset=utf-8;'
+  );
 }
 
 // ─── 数据导出 ──────────────────────────────────────────────────
@@ -1870,6 +3720,377 @@ async function exportTransparentVizLayer() {
   }
 }
 
+function renderVisualizationCanvas(mode, run, data, options = {}) {
+  return new Promise((resolve, reject) => {
+    const canvas = document.createElement('canvas');
+    const renderOptions = {
+      canvas,
+      run,
+      data,
+      includeBackground: options.includeBackground ?? true,
+      includeLegend: options.includeLegend ?? (mode === 'heatmap'),
+      useNaturalSize: true,
+      silentEmpty: options.silentEmpty ?? false,
+      onError: reject,
+      onComplete: () => resolve(canvas),
+    };
+    if (mode === 'heatmap') drawHeatmap(renderOptions);
+    else drawGazePlot(renderOptions);
+  });
+}
+
+function drawFigureText(ctx, text, x, y, maxWidth, lineHeight, options = {}) {
+  const rawText = String(text || '');
+  const words = /\s/.test(rawText)
+    ? rawText.split(/\s+/)
+    : Array.from(rawText);
+  const lines = [];
+  let current = '';
+  words.forEach(word => {
+    const next = current ? `${current} ${word}` : word;
+    if (ctx.measureText(next).width <= maxWidth || !current) current = next;
+    else {
+      lines.push(current);
+      current = word;
+    }
+  });
+  if (current) lines.push(current);
+  const limit = options.maxLines || lines.length;
+  lines.slice(0, limit).forEach((line, index) => ctx.fillText(line, x, y + index * lineHeight));
+  return Math.min(lines.length, limit) * lineHeight;
+}
+
+function drawFigureMetric(ctx, label, value, x, y, w, h, accent = '#2554a6') {
+  ctx.fillStyle = '#f8fafc';
+  ctx.strokeStyle = '#d9e0ea';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, 12);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = accent;
+  ctx.fillRect(x, y, 7, h);
+  ctx.fillStyle = '#596579';
+  ctx.font = '22px Inter, Arial, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillText(label, x + 24, y + 20);
+  ctx.fillStyle = '#17202f';
+  ctx.font = '700 34px Inter, Arial, sans-serif';
+  ctx.fillText(value, x + 24, y + 54);
+}
+
+async function exportAcademicFigure() {
+  const run = State.currentReportRun;
+  if (!run) {
+    alert('请先选择一次追踪记录。');
+    return;
+  }
+
+  const mode = getCurrentVizMode();
+  const data = getFilteredReportPoints(run);
+  const minPoints = mode === 'heatmap' ? 3 : 2;
+  if (data.length < minPoints) {
+    alert('当前时间段的数据点不足，无法导出学术图片。');
+    return;
+  }
+
+  try {
+    const source = await renderVisualizationCanvas(mode, run, data, {
+      includeBackground: true,
+      includeLegend: mode === 'heatmap',
+    });
+    const record = findRunRecord(run);
+    const metric = getMetricForRun(run);
+    const range = getReportTimeRange(run);
+    const correctionMode = resolveCorrectionMode(run, State.reportCorrectionMode);
+    const figure = document.createElement('canvas');
+    const width = 2200;
+    const margin = 140;
+    const imageWidth = width - margin * 2;
+    const scale = Math.min(1, imageWidth / source.width);
+    const imageHeight = Math.round(source.height * scale);
+    const headerH = 210;
+    const metricsH = 190;
+    const footerH = 120;
+    figure.width = width;
+    figure.height = headerH + imageHeight + metricsH + footerH;
+
+    const ctx = figure.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, figure.width, figure.height);
+    ctx.fillStyle = '#17202f';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.font = '700 54px Inter, Arial, sans-serif';
+    ctx.fillText(localizeText(mode === 'heatmap' ? '视线热力图分析' : '视线序列分析'), margin, 70);
+    ctx.font = '28px Inter, Arial, sans-serif';
+    ctx.fillStyle = '#596579';
+    const subtitle = [
+      record?.session?.label || localizeText('未知参与者'),
+      run.image?.name || localizeText('未知图片'),
+      localizeText(getRunConditionLabel(run)),
+      `${range.start.toFixed(1)}-${range.end.toFixed(1)} s`,
+      correctionMode === 'raw' ? localizeText('原始坐标') : `${correctionMode} ${localizeText('修正预览')}`,
+    ].join(' · ');
+    drawFigureText(ctx, subtitle, margin, 138, imageWidth, 34, { maxLines: 2 });
+
+    const imgX = margin;
+    const imgY = headerH;
+    ctx.strokeStyle = '#b9c5d6';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(imgX - 1, imgY - 1, imageWidth + 2, imageHeight + 2);
+    ctx.drawImage(source, imgX, imgY, imageWidth, imageHeight);
+
+    const metricsY = imgY + imageHeight + 54;
+    const cardGap = 24;
+    const cardW = (imageWidth - cardGap * 3) / 4;
+    drawFigureMetric(ctx, localizeText('样本数'), data.length.toLocaleString(), margin, metricsY, cardW, 118, '#2554a6');
+    drawFigureMetric(ctx, localizeText('有效坐标率'), formatPercent(metric.validRate), margin + (cardW + cardGap), metricsY, cardW, 118, '#1d8fa3');
+    drawFigureMetric(ctx, localizeText('平均位置'), metric.meanX == null ? '—' : `${formatMetric(metric.meanX, 2)} / ${formatMetric(metric.meanY, 2)}`, margin + (cardW + cardGap) * 2, metricsY, cardW, 118, '#d97a2b');
+    drawFigureMetric(ctx, localizeText('质控标记'), metric.anomalyFlags.length ? localizeText(metric.anomalyLabel) : localizeText('未发现技术标记'), margin + (cardW + cardGap) * 3, metricsY, cardW, 118, metric.anomalyFlags.length ? '#c8423f' : '#1f7a5c');
+
+    ctx.fillStyle = '#596579';
+    ctx.font = '24px Inter, Arial, sans-serif';
+    const note = localizeText(metric.coverageNote || metric.offsetNote || metric.repairSuggestion || '可视化保留原始数据；修正模式仅影响预览和导出。');
+    drawFigureText(ctx, note, margin, metricsY + 142, imageWidth, 32, { maxLines: 2 });
+    ctx.fillStyle = '#8792a3';
+    ctx.font = '20px Inter, Arial, sans-serif';
+    ctx.fillText(`${localizeText('由 SIGN Visual Attention 生成')} · ${new Date().toLocaleString(getDisplayLocale(), { hour12: false })}`, margin, figure.height - 58);
+
+    downloadCanvasPng(
+      `academic_${mode}_${safeFileName(record?.session?.label || 'participant')}_${safeFileName(run.image?.name || 'image')}.png`,
+      figure
+    );
+  } catch (err) {
+    alert(`无法导出学术图片：${err.message}`);
+  }
+}
+
+function resetManualCorrection() {
+  State.manualCorrection = createManualCorrectionState();
+  State.manualCorrectionRunKey = getRunManualKey();
+  updateManualCorrectionPanel();
+  redrawCurrentVisualization();
+}
+
+function createCorrectedVersionId(session, sourceRun) {
+  const base = `${sourceRun.id}-manual`;
+  const used = new Set((session?.runs || []).map(run => run.id));
+  let id = base;
+  let suffix = 2;
+  while (used.has(id)) {
+    id = `${base}-${suffix}`;
+    suffix += 1;
+  }
+  return id;
+}
+
+function saveCorrectedVersion() {
+  const sourceRun = State.currentReportRun;
+  const record = findRunRecord(sourceRun);
+  if (!sourceRun || !record) {
+    alert('请先选择一次追踪记录。');
+    return;
+  }
+  if (!isManualCorrectionActive(sourceRun)) {
+    alert('请先将坐标修正模式切换为“手动修正”。');
+    return;
+  }
+
+  const state = ensureManualCorrectionState(sourceRun);
+  const range = getReportTimeRange(sourceRun);
+  const entries = getTimeFilteredReportPoints(sourceRun)
+    .filter(({ point, index }) => !state.excluded.has(getPointIdentity(point, index)));
+  if (entries.length < 3) {
+    alert('当前有效时间段或涂抹后剩余数据点不足，无法另存为修正版。');
+    return;
+  }
+
+  const plane = sourceRun.a4Plane || record.session.a4Plane || State.currentA4Plane;
+  const correctedPoints = entries.map(({ point }, index) => {
+    const raw = getRawA4Position(point, sourceRun);
+    const corrected = raw ? applyA4Correction(raw, sourceRun, 'manual') : null;
+    const a4X = corrected ? clamp01(corrected.x) : undefined;
+    const a4Y = corrected ? clamp01(corrected.y) : undefined;
+    return {
+      ...point,
+      index: index + 1,
+      x: corrected && plane ? plane.left + a4X * plane.width : point.x,
+      y: corrected && plane ? plane.top + a4Y * plane.height : point.y,
+      a4X,
+      a4Y,
+      a4Xmm: a4X == null ? undefined : a4X * A4_SIZE_MM.width,
+      a4Ymm: a4Y == null ? undefined : a4Y * A4_SIZE_MM.height,
+      onPaper: corrected ? true : point.onPaper,
+    };
+  });
+
+  const existingVersions = record.session.runs.filter(run => run.sourceRunId === sourceRun.id || run.manualCorrection?.sourceRunId === sourceRun.id).length;
+  const versionNo = existingVersions + 1;
+  const correctedRun = {
+    ...sourceRun,
+    id: createCorrectedVersionId(record.session, sourceRun),
+    startedAt: sourceRun.startedAt,
+    endedAt: new Date().toISOString(),
+    duration: Math.max(0, range.end - range.start),
+    image: {
+      ...sourceRun.image,
+      name: `${sourceRun.image?.name || 'image'} 修正版${versionNo}`,
+    },
+    coordinateSystem: 'a4-landscape-paper',
+    a4Plane: plane ? { ...plane } : sourceRun.a4Plane,
+    paperSizeMm: { ...A4_SIZE_MM },
+    points: correctedPoints,
+    sourceRunId: sourceRun.id,
+    versionLabel: `手动修正版 ${versionNo}`,
+    manualCorrection: {
+      sourceRunId: sourceRun.id,
+      createdAt: new Date().toISOString(),
+      timeRange: { start: range.start, end: range.end },
+      offsetX: state.offsetX,
+      offsetY: state.offsetY,
+      scaleX: state.scaleX,
+      scaleY: state.scaleY,
+      brushRadius: state.brushRadius,
+      excludedPointCount: state.excluded.size,
+      retainedPointCount: correctedPoints.length,
+    },
+  };
+
+  const sourceIndex = record.session.runs.findIndex(run => run === sourceRun || run.id === sourceRun.id);
+  record.session.runs.splice(sourceIndex + 1, 0, correctedRun);
+  State.currentReportRun = correctedRun;
+  State.gazeHistory = correctedRun.points;
+  State.uploadedImageSrc = correctedRun.imageSrc;
+  State.reportCorrectionMode = 'raw';
+  EL.vizCorrectionMode.value = 'raw';
+  State.manualCorrection = null;
+  State.manualCorrectionRunKey = '';
+  State.archiveDirty = true;
+  State.archiveUnloadPrompted = false;
+  resetReportTimeRange(correctedRun);
+  renderDataWorkbench();
+  updateReportFromCurrentRun();
+  updateAnalysisDashboard();
+  updateManualCorrectionPanel();
+}
+
+function exportAnalysisFigure() {
+  const snapshot = State.latestAnalysisSnapshot || createAnalysisSnapshot();
+  if (!snapshot.overall.runs) {
+    alert('暂无可导出的分析数据');
+    return;
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 2200;
+  canvas.height = 1600;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const margin = 120;
+  ctx.fillStyle = '#17202f';
+  ctx.font = '700 58px Inter, Arial, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillText(localizeText('整体眼动分析'), margin, 80);
+  ctx.fillStyle = '#596579';
+  ctx.font = '28px Inter, Arial, sans-serif';
+  drawFigureText(
+    ctx,
+    `${localizeText('分析范围')}: ${localizeText({ all: '全部数据', session: '当前参与者', run: '当前记录' }[snapshot.scope] || snapshot.scope)} · ${localizeText('记录')}: ${snapshot.overall.runs} · ${localizeText('样本数')}: ${snapshot.overall.points.toLocaleString()} · ${localizeText('生成时间')} ${new Date().toLocaleString(getDisplayLocale(), { hour12: false })}`,
+    margin,
+    155,
+    1800,
+    36,
+    { maxLines: 2 }
+  );
+
+  const cards = [
+    [localizeText('参与者'), snapshot.overall.participants.toLocaleString(), '#2554a6'],
+    [localizeText('记录'), snapshot.overall.runs.toLocaleString(), '#1d8fa3'],
+    [localizeText('有效率'), formatPercent(snapshot.overall.validRate), '#1f7a5c'],
+    [localizeText('平均 FPS'), `${formatMetric(snapshot.overall.fpsAvg, 1)} Hz`, '#d97a2b'],
+    [localizeText('质控标记数'), snapshot.overall.anomalyRuns.toLocaleString(), snapshot.overall.anomalyRuns ? '#c8423f' : '#1f7a5c'],
+  ];
+  const cardGap = 22;
+  const cardW = (canvas.width - margin * 2 - cardGap * (cards.length - 1)) / cards.length;
+  cards.forEach(([label, value, color], index) => {
+    drawFigureMetric(ctx, label, value, margin + index * (cardW + cardGap), 250, cardW, 122, color);
+  });
+
+  const chartX = margin;
+  const chartY = 460;
+  const chartW = 900;
+  const chartH = 380;
+  ctx.fillStyle = '#17202f';
+  ctx.font = '700 34px Inter, Arial, sans-serif';
+  ctx.fillText(localizeText('条件对比'), chartX, chartY - 54);
+  const maxRuns = Math.max(1, ...snapshot.conditions.map(group => group.summary.runs));
+  snapshot.conditions.slice(0, 6).forEach((group, index) => {
+    const y = chartY + index * 58;
+    const barW = (group.summary.runs / maxRuns) * chartW;
+    ctx.fillStyle = '#eef2f6';
+    ctx.fillRect(chartX, y, chartW, 34);
+    ctx.fillStyle = group.key === '实验组' ? '#c8423f' : '#2554a6';
+    ctx.fillRect(chartX, y, barW, 34);
+    ctx.fillStyle = '#17202f';
+    ctx.font = '24px Inter, Arial, sans-serif';
+    ctx.fillText(`${localizeText(group.label)} · ${group.summary.runs} ${localizeText('记录')} · ${localizeText('有效率')} ${formatPercent(group.summary.validRate)}`, chartX + 14, y + 5);
+  });
+
+  const zoneX = 1150;
+  const zoneY = 460;
+  const cell = 180;
+  const maxZone = Math.max(1, ...snapshot.overall.zoneCounts);
+  ctx.fillStyle = '#17202f';
+  ctx.font = '700 34px Inter, Arial, sans-serif';
+  ctx.fillText(localizeText('打印区域分布'), zoneX, zoneY - 54);
+  snapshot.overall.zoneCounts.forEach((count, index) => {
+    const col = index % 3;
+    const row = Math.floor(index / 3);
+    const x = zoneX + col * (cell + 16);
+    const y = zoneY + row * (cell + 16);
+    const ratio = snapshot.overall.validPoints ? count / snapshot.overall.validPoints : 0;
+    const alpha = 0.08 + (count / maxZone) * 0.46;
+    ctx.fillStyle = `rgba(37,84,166,${alpha})`;
+    ctx.strokeStyle = '#d9e0ea';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(x, y, cell, cell, 12);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#17202f';
+    ctx.font = '700 30px Inter, Arial, sans-serif';
+    ctx.fillText(formatPercent(ratio, 1), x + 20, y + 52);
+    ctx.fillStyle = '#596579';
+    ctx.font = '22px Inter, Arial, sans-serif';
+    ctx.fillText(getAnalysisZoneLabel(index), x + 20, y + 22);
+    ctx.fillText(`${count.toLocaleString()} ${localizeText('点数')}`, x + 20, y + 96);
+  });
+
+  ctx.fillStyle = '#17202f';
+  ctx.font = '700 34px Inter, Arial, sans-serif';
+  ctx.fillText(localizeText('自动解释摘要'), margin, 1050);
+  ctx.fillStyle = '#596579';
+  ctx.font = '28px Inter, Arial, sans-serif';
+  let noteY = 1110;
+  snapshot.insights.slice(0, 6).forEach((insight, index) => {
+    ctx.fillStyle = index === 0 ? '#2554a6' : '#596579';
+    noteY += drawFigureText(ctx, `${index + 1}. ${localizeText(insight)}`, margin, noteY, 1900, 40, { maxLines: 2 }) + 12;
+  });
+  ctx.fillStyle = '#8792a3';
+  ctx.font = '22px Inter, Arial, sans-serif';
+  ctx.fillText(localizeText('技术异常筛查不会将局部注意力本身视为无效。'), margin, canvas.height - 80);
+
+  downloadCanvasPng(
+    `academic_overall_analysis_${new Date().toISOString().replace(/[:.]/g, '-')}.png`,
+    canvas
+  );
+}
+
 function buildCsv(records) {
   const headers = [
     'participant_id',
@@ -1911,8 +4132,8 @@ function buildCsv(records) {
         run.image.name,
         run.image.size,
         run.image.group || '',
-        run.image.condition || '',
-        run.image.conditionLabel || '',
+        getImageConditionMeta(run.image).condition,
+        getImageConditionMeta(run.image).label,
         run.startedAt,
         run.endedAt,
         run.duration.toFixed(3),
@@ -1979,7 +4200,7 @@ function getArchiveFilename(date = new Date()) {
   const participantName = getArchiveParticipantName();
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${safeFileName(participantName)}-${hours}.${minutes}-visual analytics.json`;
+  return `${safeFileName(participantName)}-${hours}.${minutes}-sign visual attention.json`;
 }
 
 function getArchiveParticipantName() {
@@ -1990,32 +4211,60 @@ function getArchiveParticipantName() {
     || '未命名参与者';
 }
 
+function readArchiveFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = event => {
+      try {
+        resolve({
+          fileName: file.name,
+          archive: JSON.parse(event.target.result),
+        });
+      } catch (err) {
+        reject(new Error(`${file.name}: ${err.message}`));
+      }
+    };
+    reader.onerror = () => reject(new Error(`${file.name}: 文件读取失败`));
+    reader.readAsText(file);
+  });
+}
+
+async function importArchiveFiles(fileList, sourceInput = EL.importArchiveInput) {
+  const files = Array.from(fileList || []).filter(file => /\.json$/i.test(file.name));
+  if (!files.length) return;
+
+  try {
+    const loaded = await Promise.all(files.map(readArchiveFile));
+    const sessions = loaded.flatMap(({ archive, fileName }) => {
+      const normalized = normalizeImportedSessions(archive);
+      if (!normalized.length) throw new Error(`${fileName}: 存档中没有可用的参与者数据`);
+      return normalized;
+    });
+
+    const imported = uniquifyImportedSessionIds(sessions);
+    State.calibrationSessions.push(...imported);
+    State.calibrationSessionSeq = Math.max(State.calibrationSessionSeq, State.calibrationSessions.length);
+    State.calibrationSession = State.calibrationDone ? State.calibrationSession : null;
+    State.selectedSessionId = imported[0].id;
+    State.currentReportRun = imported[0].runs[0] || null;
+    State.gazeHistory = State.currentReportRun ? State.currentReportRun.points : [];
+    State.uploadedImageSrc = State.currentReportRun ? State.currentReportRun.imageSrc : null;
+    updateHomeDataSummary();
+    showDataScreen(State.currentReportRun);
+  } catch (err) {
+    alert(`无法导入存档：${err.message}`);
+  } finally {
+    if (sourceInput) sourceInput.value = '';
+  }
+}
+
 function importArchiveFile(file) {
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = event => {
-    try {
-      const archive = JSON.parse(event.target.result);
-      const sessions = normalizeImportedSessions(archive);
-      if (!sessions.length) throw new Error('存档中没有可用的参与者数据');
+  importArchiveFiles([file]);
+}
 
-      const imported = uniquifyImportedSessionIds(sessions);
-      State.calibrationSessions.push(...imported);
-      State.calibrationSessionSeq = Math.max(State.calibrationSessionSeq, State.calibrationSessions.length);
-      State.calibrationSession = State.calibrationDone ? State.calibrationSession : null;
-      State.selectedSessionId = imported[0].id;
-      State.currentReportRun = imported[0].runs[0] || null;
-      State.gazeHistory = State.currentReportRun ? State.currentReportRun.points : [];
-      State.uploadedImageSrc = State.currentReportRun ? State.currentReportRun.imageSrc : null;
-      updateHomeDataSummary();
-      showDataScreen(State.currentReportRun);
-    } catch (err) {
-      alert(`无法导入存档：${err.message}`);
-    } finally {
-      EL.importArchiveInput.value = '';
-    }
-  };
-  reader.readAsText(file);
+function importArchiveFolder(fileList) {
+  importArchiveFiles(fileList, EL.importArchiveFolderInput);
 }
 
 function uniquifyImportedSessionIds(sessions) {
@@ -2046,36 +4295,64 @@ function normalizeImportedSessions(archive) {
       coordinateSystem: session.coordinateSystem || 'screen',
       a4Plane: normalizeA4Plane(session.a4Plane),
       paperSizeMm: normalizePaperSize(session.paperSizeMm),
-      runs: (Array.isArray(session.runs) ? session.runs : []).map((run, runIndex) => ({
-        id: String(run.id || `trial-${runIndex + 1}`),
-        startedAt: run.startedAt || '',
-        endedAt: run.endedAt || '',
-        duration: Number(run.duration) || 0,
-        image: {
+      runs: uniquifySessionRunIds((Array.isArray(session.runs) ? session.runs : []).map((run, runIndex) => {
+        const rawImage = {
           id: String(run.image?.id || `image-${runIndex + 1}`),
           name: String(run.image?.name || `image-${runIndex + 1}`),
           size: Number(run.image?.size) || 0,
           group: run.image?.group ? String(run.image.group) : '',
           condition: run.image?.condition ? String(run.image.condition) : '',
           conditionLabel: run.image?.conditionLabel ? String(run.image.conditionLabel) : '',
-        },
-        imageSrc: run.imageSrc || '',
-        coordinateSystem: run.coordinateSystem || session.coordinateSystem || 'screen',
-        a4Plane: normalizeA4Plane(run.a4Plane || session.a4Plane),
-        paperSizeMm: normalizePaperSize(run.paperSizeMm || session.paperSizeMm),
-        points: (Array.isArray(run.points) ? run.points : []).map((point, pointIndex) => ({
-          index: Number(point.index) || pointIndex + 1,
-          x: Number(point.x) || 0,
-          y: Number(point.y) || 0,
-          a4X: point.a4X == null ? undefined : clamp01(Number(point.a4X) || 0),
-          a4Y: point.a4Y == null ? undefined : clamp01(Number(point.a4Y) || 0),
-          a4Xmm: point.a4Xmm == null ? undefined : Number(point.a4Xmm) || 0,
-          a4Ymm: point.a4Ymm == null ? undefined : Number(point.a4Ymm) || 0,
-          onPaper: point.onPaper == null ? undefined : Boolean(point.onPaper),
-          timestamp: point.timestamp ?? '',
-        })),
+        };
+        const conditionMeta = getImageConditionMeta(rawImage);
+        return {
+          id: String(run.id || `trial-${runIndex + 1}`),
+          startedAt: run.startedAt || '',
+          endedAt: run.endedAt || '',
+          duration: Number(run.duration) || 0,
+          image: {
+            ...rawImage,
+            condition: conditionMeta.condition,
+            conditionLabel: conditionMeta.label,
+          },
+          imageSrc: run.imageSrc || '',
+          coordinateSystem: run.coordinateSystem || session.coordinateSystem || 'screen',
+          a4Plane: normalizeA4Plane(run.a4Plane || session.a4Plane),
+          paperSizeMm: normalizePaperSize(run.paperSizeMm || session.paperSizeMm),
+          sourceRunId: run.sourceRunId ? String(run.sourceRunId) : undefined,
+          versionLabel: run.versionLabel ? String(run.versionLabel) : undefined,
+          manualCorrection: run.manualCorrection && typeof run.manualCorrection === 'object'
+            ? { ...run.manualCorrection }
+            : undefined,
+          points: (Array.isArray(run.points) ? run.points : []).map((point, pointIndex) => ({
+            index: Number(point.index) || pointIndex + 1,
+            x: Number(point.x) || 0,
+            y: Number(point.y) || 0,
+            a4X: point.a4X == null ? undefined : clamp01(Number(point.a4X) || 0),
+            a4Y: point.a4Y == null ? undefined : clamp01(Number(point.a4Y) || 0),
+            a4Xmm: point.a4Xmm == null ? undefined : Number(point.a4Xmm) || 0,
+            a4Ymm: point.a4Ymm == null ? undefined : Number(point.a4Ymm) || 0,
+            onPaper: point.onPaper == null ? undefined : Boolean(point.onPaper),
+            timestamp: point.timestamp ?? '',
+          })),
+        };
       })),
     };
+  });
+}
+
+function uniquifySessionRunIds(runs) {
+  const used = new Set();
+  return runs.map((run, index) => {
+    const base = run.id || `trial-${index + 1}`;
+    let id = base;
+    let suffix = 2;
+    while (used.has(id)) {
+      id = `${base}-${suffix}`;
+      suffix += 1;
+    }
+    used.add(id);
+    return id === run.id ? run : { ...run, id };
   });
 }
 
@@ -2119,6 +4396,14 @@ function handleBeforeUnload(event) {
 
 // ─── 事件绑定 ──────────────────────────────────────────────────
 function bindEvents() {
+  EL.languageSelect?.addEventListener('change', () => {
+    applyLanguage(EL.languageSelect.value);
+    updateHomeDataSummary();
+    updateManualCorrectionPanel();
+    updateAnalysisDashboard();
+    updateGazePlaybackControls();
+  });
+
   // 重试按钮
   EL.retryInitBtn.addEventListener('click', () => {
     hideModal(EL.errorModal);
@@ -2150,6 +4435,8 @@ function bindEvents() {
 
   EL.openDataBtn.addEventListener('click', () => showDataScreen());
   EL.importArchiveHomeBtn.addEventListener('click', () => EL.importArchiveInput.click());
+  EL.externalImageBtn?.addEventListener('click', () => EL.externalImageInput?.click());
+  EL.externalImageInput?.addEventListener('change', event => loadExternalImage(event.target.files?.[0]));
 
   // 停止追踪
   EL.stopTrackingBtn.addEventListener('click', stopTracking);
@@ -2182,10 +4469,39 @@ function bindEvents() {
     State.reportShowBackground = EL.vizBackgroundToggle.checked;
     redrawCurrentVisualization();
   });
+  EL.vizCorrectionMode.addEventListener('change', () => {
+    State.reportCorrectionMode = EL.vizCorrectionMode.value;
+    if (State.reportCorrectionMode === 'manual') ensureManualCorrectionState(State.currentReportRun);
+    stopGazePlayback(false);
+    updateManualCorrectionPanel();
+    redrawCurrentVisualization();
+  });
+  EL.manualCorrectionTool.addEventListener('change', () => {
+    updateManualCursor();
+    updateManualCorrectionPanel();
+  });
+  EL.manualBrushRadius.addEventListener('input', () => {
+    const state = ensureManualCorrectionState(State.currentReportRun);
+    state.brushRadius = Math.max(0.01, Math.min(0.12, Number(EL.manualBrushRadius.value) / 100));
+    updateManualCorrectionPanel();
+  });
+  EL.manualResetBtn.addEventListener('click', resetManualCorrection);
+  EL.saveCorrectedVersionBtn.addEventListener('click', saveCorrectedVersion);
+  EL.manualCorrectionCanvas.addEventListener('pointerdown', handleManualPointerDown);
+  EL.manualCorrectionCanvas.addEventListener('pointermove', handleManualPointerMove);
+  EL.manualCorrectionCanvas.addEventListener('pointerup', handleManualPointerUp);
+  EL.manualCorrectionCanvas.addEventListener('pointercancel', handleManualPointerUp);
+  EL.manualCorrectionCanvas.addEventListener('pointerleave', () => {
+    if (State.manualCorrection?.pointer && !State.manualCorrection.pointer.start) {
+      State.manualCorrection.pointer = null;
+      drawManualOverlay();
+    }
+  });
   [EL.vizTimeStart, EL.vizTimeEnd].forEach(input => {
     input.addEventListener('input', () => {
       stopGazePlayback(false);
       updateReportStats(State.currentReportRun);
+      updateManualCorrectionPanel();
       redrawCurrentVisualization();
     });
   });
@@ -2193,10 +4509,19 @@ function bindEvents() {
     stopGazePlayback(false);
     resetReportTimeRange(State.currentReportRun);
     updateReportStats(State.currentReportRun);
+    updateManualCorrectionPanel();
     redrawCurrentVisualization();
   });
   EL.gazePlaybackBtn.addEventListener('click', toggleGazePlayback);
   EL.exportVizLayerBtn.addEventListener('click', exportTransparentVizLayer);
+  EL.exportAcademicFigureBtn.addEventListener('click', exportAcademicFigure);
+  EL.singleAnalysisTab.addEventListener('click', () => setReportMode('single'));
+  EL.overallAnalysisTab.addEventListener('click', () => setReportMode('overall'));
+  EL.analysisScopeSelect.addEventListener('change', updateAnalysisDashboard);
+  EL.analysisImageSelect.addEventListener('change', updateAnalysisDashboard);
+  EL.exportAnalysisCsvBtn.addEventListener('click', exportAnalysisCSV);
+  EL.exportAnalysisJsonBtn.addEventListener('click', exportAnalysisJSON);
+  EL.exportAnalysisFigureBtn.addEventListener('click', exportAnalysisFigure);
 
   // 返回首页
   EL.backHomeBtn.addEventListener('click', () => {
@@ -2207,7 +4532,9 @@ function bindEvents() {
 
   // 导出
   EL.importArchiveBtn.addEventListener('click', () => EL.importArchiveInput.click());
-  EL.importArchiveInput.addEventListener('change', e => importArchiveFile(e.target.files[0]));
+  EL.importArchiveFolderBtn.addEventListener('click', () => EL.importArchiveFolderInput.click());
+  EL.importArchiveInput.addEventListener('change', e => importArchiveFiles(e.target.files, e.target));
+  EL.importArchiveFolderInput.addEventListener('change', e => importArchiveFolder(e.target.files));
   EL.exportArchiveBtn.addEventListener('click', exportArchive);
   EL.exportSelectedDataBtn.addEventListener('click', exportSelectedCSV);
   EL.exportDataBtn.addEventListener('click', exportCSV);
@@ -2220,6 +4547,7 @@ function bindEvents() {
     stopGazePlayback(false);
     if (EL.tabHeatmap.classList.contains('active')) drawHeatmap();
     else drawGazePlot();
+    drawManualOverlay();
   });
   window.addEventListener('beforeunload', handleBeforeUnload);
 }
@@ -2227,11 +4555,14 @@ function bindEvents() {
 // ─── 入口 ─────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   // 默认直接进入主界面；只有开始校准时才请求摄像头权限。
+  startLanguageObserver();
   hideModal(EL.loadingOverlay);
   hideModal(EL.errorModal);
   showScreen(EL.homeScreen);
   initializeBuiltinImages();
   updateHomeDataSummary();
+  updateAnalysisDashboard();
 
   bindEvents();
+  applyLanguage(State.language);
 });
