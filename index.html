@@ -54,6 +54,28 @@
   </div>
 </div>
 
+<!-- ========== 学术图片批量导出选择 ========== -->
+<div id="academic-batch-modal" class="modal-overlay">
+  <div class="modal-card academic-batch-card">
+    <div class="academic-batch-head">
+      <div>
+        <h2 class="modal-title">选择批量导出记录</h2>
+        <p class="modal-desc" id="academic-batch-summary">按当前分析范围选择需要导出的追踪记录。</p>
+      </div>
+      <button class="btn btn-ghost academic-batch-close" id="academic-batch-cancel-btn" type="button">取消</button>
+    </div>
+    <div class="academic-batch-toolbar">
+      <button class="btn btn-ghost" id="academic-batch-select-all-btn" type="button">全选</button>
+      <button class="btn btn-ghost" id="academic-batch-clear-btn" type="button">清空</button>
+    </div>
+    <div class="academic-batch-list" id="academic-batch-list"></div>
+    <div class="academic-batch-actions">
+      <button class="btn btn-ghost" id="academic-batch-cancel-secondary-btn" type="button">取消</button>
+      <button class="btn btn-primary" id="academic-batch-start-btn" type="button">导出选中图片</button>
+    </div>
+  </div>
+</div>
+
 <!-- ========== 摄像头选择界面 ========== -->
 <div id="camera-select-screen" class="screen hidden">
   <div class="camera-select-shell">
@@ -440,6 +462,7 @@
         <button class="btn btn-secondary" id="gaze-playback-btn" disabled>模拟回放</button>
         <button class="btn btn-primary" id="export-viz-layer-btn">导出透明图层</button>
         <button class="btn btn-primary" id="export-academic-figure-btn">导出学术图片</button>
+        <button class="btn btn-primary" id="export-academic-batch-btn">批量导出学术图片</button>
       </div>
     </div>
     <div class="manual-correction-panel hidden" id="manual-correction-panel">

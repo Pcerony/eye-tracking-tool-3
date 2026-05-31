@@ -235,13 +235,23 @@ const I18N_TEXT = {
     '暂无数据': 'No data',
     '当前范围内未发现明显技术异常。局部凝视不单独计为异常。': 'No clear technical anomalies were detected in the current scope. Localized attention alone is not treated as an anomaly.',
     '暂无可导出的分析数据': 'No analysis data to export',
+    '批量导出学术图片': 'Batch Export Academic Figures',
+    '选择批量导出记录': 'Select Records to Export',
+    '按当前分析范围选择需要导出的追踪记录。': 'Choose tracking records from the current analysis scope.',
+    '全选': 'Select All',
+    '清空': 'Clear',
+    '导出选中图片': 'Export Selected Figures',
+    '取消': 'Cancel',
+    '请至少选择一条记录。': 'Select at least one record.',
     '无法导出图层，请稍后重试。': 'Unable to export the layer. Try again later.',
     '请先选择一次追踪记录。': 'Select a tracking record first.',
     '当前时间段的数据点不足，无法导出图层。': 'There are not enough points in the current interval to export the layer.',
     '当前时间段的数据点不足，无法导出学术图片。': 'There are not enough points in the current interval to export an academic figure.',
     '请先将坐标修正模式切换为“手动修正”。': 'Switch the coordinate correction mode to "Manual Correction" first.',
     '当前有效时间段或涂抹后剩余数据点不足，无法另存为修正版。': 'The current valid interval or remaining brushed data has too few points to save a corrected version.',
+    '没有可保存的数据点。请调整有效时间段或恢复被涂抹的点。': 'There are no data points to save. Adjust the valid interval or restore brushed points.',
     '修正版': 'Corrected Version',
+    '已另存为修正版：': 'Saved corrected version: ',
     '暂无可导出的追踪数据': 'No tracking data to export',
     '暂无参与者存档可导出': 'No participant archive to export',
     '文件读取失败': 'File read failed',
@@ -494,13 +504,23 @@ const I18N_TEXT = {
     '暂无数据': 'データなし',
     '当前范围内未发现明显技术异常。局部凝视不单独计为异常。': '現在の範囲で明確な技術的異常は検出されませんでした。局所的注視だけでは異常とはみなしません。',
     '暂无可导出的分析数据': '書き出し可能な分析データがありません',
+    '批量导出学术图片': '学術図を一括書き出し',
+    '选择批量导出记录': '一括書き出し記録を選択',
+    '按当前分析范围选择需要导出的追踪记录。': '現在の分析範囲から書き出す追跡記録を選択してください。',
+    '全选': 'すべて選択',
+    '清空': 'クリア',
+    '导出选中图片': '選択した図を書き出し',
+    '取消': 'キャンセル',
+    '请至少选择一条记录。': '少なくとも1件の記録を選択してください。',
     '无法导出图层，请稍后重试。': 'レイヤーを書き出せません。後でもう一度お試しください。',
     '请先选择一次追踪记录。': '先に追跡記録を1つ選択してください。',
     '当前时间段的数据点不足，无法导出图层。': '現在の時間範囲のデータ点が不足しているため、レイヤーを書き出せません。',
     '当前时间段的数据点不足，无法导出学术图片。': '現在の時間範囲のデータ点が不足しているため、学術図を書き出せません。',
     '请先将坐标修正模式切换为“手动修正”。': '先に座標補正モードを「手動補正」に切り替えてください。',
     '当前有效时间段或涂抹后剩余数据点不足，无法另存为修正版。': '現在の有効時間範囲、またはブラシ後に残った点が不足しているため、補正版として保存できません。',
+    '没有可保存的数据点。请调整有效时间段或恢复被涂抹的点。': '保存できるデータ点がありません。有効時間範囲を調整するか、ブラシ除外した点を復元してください。',
     '修正版': '補正版',
+    '已另存为修正版：': '補正版として保存しました：',
     '暂无可导出的追踪数据': '書き出し可能な追跡データがありません',
     '暂无参与者存档可导出': '書き出し可能な参加者アーカイブがありません',
     '文件读取失败': 'ファイル読み込みに失敗しました',
@@ -559,7 +579,9 @@ const I18N_PATTERNS = {
     [/^(.+) · (.+) 次记录 · (.+) 点$/, match => `${localizeText(match[1])} · ${match[2]} records · ${match[3]} points`],
     [/^无法导出图层：(.+)$/, match => `Unable to export layer: ${match[1]}`],
     [/^无法导出学术图片：(.+)$/, match => `Unable to export academic figure: ${match[1]}`],
+    [/^批量导出完成：(\d+) 张(?:，跳过 (\d+) 条点数不足记录)?$/, match => `Batch export complete: ${match[1]} figure${match[1] === '1' ? '' : 's'}${match[2] ? `, skipped ${match[2]} record${match[2] === '1' ? '' : 's'} with too few points` : ''}`],
     [/^无法载入外部图片：(.+)$/, match => `Unable to load external image: ${match[1]}`],
+    [/^已另存为修正版：(.+)$/, match => `Saved corrected version: ${match[1]}`],
     [/^无法导入存档：(.+)$/, match => `Unable to import archive: ${match[1]}`],
     [/^(.+): 文件读取失败$/, match => `${match[1]}: file read failed`],
     [/^(.+): 存档中没有可用的参与者数据$/, match => `${match[1]}: archive contains no usable participant data`],
@@ -593,7 +615,9 @@ const I18N_PATTERNS = {
     [/^(.+) · (.+) 次记录 · (.+) 点$/, match => `${localizeText(match[1])} · ${match[2]} 件の記録 · ${match[3]} 点`],
     [/^无法导出图层：(.+)$/, match => `レイヤーを書き出せません：${match[1]}`],
     [/^无法导出学术图片：(.+)$/, match => `学術図を書き出せません：${match[1]}`],
+    [/^批量导出完成：(\d+) 张(?:，跳过 (\d+) 条点数不足记录)?$/, match => `一括書き出し完了：${match[1]}件${match[2] ? `、点数不足の記録を${match[2]}件スキップ` : ''}`],
     [/^无法载入外部图片：(.+)$/, match => `外部画像を読み込めません：${match[1]}`],
+    [/^已另存为修正版：(.+)$/, match => `補正版として保存しました：${match[1]}`],
     [/^无法导入存档：(.+)$/, match => `アーカイブを読み込めません：${match[1]}`],
     [/^(.+): 文件读取失败$/, match => `${match[1]}: ファイル読み込みに失敗しました`],
     [/^(.+): 存档中没有可用的参与者数据$/, match => `${match[1]}: アーカイブに使用可能な参加者データがありません`],
@@ -768,6 +792,7 @@ const State = {
   latestAnalysisSnapshot: null,
   manualCorrection: null,
   manualCorrectionRunKey: '',
+  academicBatchRecords: [],
 };
 
 // ─── DOM ────────────────────────────────────────────────────────
@@ -781,6 +806,14 @@ const EL = {
   errorMessage:    $('error-message'),
   errorDetail:     $('error-detail'),
   retryInitBtn:    $('retry-init-btn'),
+  academicBatchModal: $('academic-batch-modal'),
+  academicBatchSummary: $('academic-batch-summary'),
+  academicBatchList: $('academic-batch-list'),
+  academicBatchSelectAllBtn: $('academic-batch-select-all-btn'),
+  academicBatchClearBtn: $('academic-batch-clear-btn'),
+  academicBatchCancelBtn: $('academic-batch-cancel-btn'),
+  academicBatchCancelSecondaryBtn: $('academic-batch-cancel-secondary-btn'),
+  academicBatchStartBtn: $('academic-batch-start-btn'),
 
   // 屏幕
   homeScreen:      $('home-screen'),
@@ -866,6 +899,7 @@ const EL = {
   gazePlaybackBtn: $('gaze-playback-btn'),
   exportVizLayerBtn: $('export-viz-layer-btn'),
   exportAcademicFigureBtn: $('export-academic-figure-btn'),
+  exportAcademicBatchBtn: $('export-academic-batch-btn'),
   analysisScopeNote: $('analysis-scope-note'),
   analysisScopeSelect: $('analysis-scope-select'),
   analysisImageSelect: $('analysis-image-select'),
@@ -2268,17 +2302,23 @@ function createReportCanvasForImage(canvas, img, useNaturalSize = false) {
   if (useNaturalSize) {
     canvas.width = img.naturalWidth;
     canvas.height = img.naturalHeight;
+    canvas.style.width = '';
+    canvas.style.height = '';
     return;
   }
 
-  const containerW = canvas.parentElement?.clientWidth || window.innerWidth;
+  const container = canvas.parentElement;
+  const containerW = Math.max(1, (container?.clientWidth || window.innerWidth) - 2);
+  const containerH = Math.max(1, (container?.clientHeight || window.innerHeight * 0.65) - 2);
   const scale = Math.min(
     containerW / img.naturalWidth,
-    (window.innerHeight * 0.65) / img.naturalHeight,
+    containerH / img.naturalHeight,
     1
   );
   canvas.width  = Math.round(img.naturalWidth  * scale);
   canvas.height = Math.round(img.naturalHeight * scale);
+  canvas.style.width = `${canvas.width}px`;
+  canvas.style.height = `${canvas.height}px`;
 }
 
 function drawReportMessage(canvas, text, transparent = false) {
@@ -2370,6 +2410,16 @@ function resolveCorrectionMode(run, requestedMode = State.reportCorrectionMode) 
   return getMetricForRun(run).autoCorrectionMode || 'raw';
 }
 
+function transformManualPosition(pos, state, shouldClamp = true) {
+  const transformed = {
+    x: 0.5 + (pos.x - 0.5) * state.scaleX + state.offsetX,
+    y: 0.5 + (pos.y - 0.5) * state.scaleY + state.offsetY,
+  };
+  return shouldClamp
+    ? { x: clamp01(transformed.x), y: clamp01(transformed.y) }
+    : transformed;
+}
+
 function applyA4Correction(pos, run, requestedMode = State.reportCorrectionMode) {
   const mode = resolveCorrectionMode(run, requestedMode);
   if (!run || mode === 'raw') return pos;
@@ -2377,10 +2427,7 @@ function applyA4Correction(pos, run, requestedMode = State.reportCorrectionMode)
   const metric = getMetricForRun(run);
   if (mode === 'manual') {
     const state = ensureManualCorrectionState(run);
-    return {
-      x: clamp01(0.5 + (pos.x - 0.5) * state.scaleX + state.offsetX),
-      y: clamp01(0.5 + (pos.y - 0.5) * state.scaleY + state.offsetY),
-    };
+    return transformManualPosition(pos, state);
   }
 
   if (mode === 'shift' && metric.meanX != null && metric.meanY != null) {
@@ -2497,14 +2544,17 @@ function syncManualOverlayCanvas() {
   return true;
 }
 
-function getCanvasRelativePosition(event) {
+function getCanvasRelativePosition(event, options = {}) {
   const canvas = EL.reportCanvas;
   if (!canvas) return null;
   const rect = canvas.getBoundingClientRect();
   if (!rect.width || !rect.height) return null;
+  const x = (event.clientX - rect.left) / rect.width;
+  const y = (event.clientY - rect.top) / rect.height;
+  const shouldClamp = options.clamp !== false;
   return {
-    x: clamp01((event.clientX - rect.left) / rect.width),
-    y: clamp01((event.clientY - rect.top) / rect.height),
+    x: shouldClamp ? clamp01(x) : x,
+    y: shouldClamp ? clamp01(y) : y,
     rect,
   };
 }
@@ -2551,14 +2601,20 @@ function drawManualOverlay() {
 }
 
 function getManualOverlayEntries(run = State.currentReportRun) {
+  const state = ensureManualCorrectionState(run);
   return getTimeFilteredReportPoints(run).map(({ point, index }) => {
     const raw = getRawA4Position(point, run);
     if (!raw) return null;
+    const transformed = transformManualPosition(raw, state, false);
     return {
       point,
       index,
       raw,
-      corrected: applyA4Correction(raw, run, 'manual'),
+      transformed,
+      corrected: {
+        x: clamp01(transformed.x),
+        y: clamp01(transformed.y),
+      },
     };
   }).filter(Boolean);
 }
@@ -2568,43 +2624,62 @@ function getManualTransformBox(run = State.currentReportRun, preparedEntries = n
   const entries = preparedEntries || getManualOverlayEntries(run);
   const active = entries.filter(({ point, index }) => !state.excluded.has(getPointIdentity(point, index)));
   if (!active.length) return null;
-  let minX = 1, minY = 1, maxX = 0, maxY = 0;
-  active.forEach(({ corrected }) => {
-    minX = Math.min(minX, corrected.x);
-    minY = Math.min(minY, corrected.y);
-    maxX = Math.max(maxX, corrected.x);
-    maxY = Math.max(maxY, corrected.y);
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  active.forEach(({ corrected, transformed }) => {
+    const point = transformed || corrected;
+    minX = Math.min(minX, point.x);
+    minY = Math.min(minY, point.y);
+    maxX = Math.max(maxX, point.x);
+    maxY = Math.max(maxY, point.y);
   });
   const pad = 0.012;
   return {
-    minX: clamp01(minX - pad),
-    minY: clamp01(minY - pad),
-    maxX: clamp01(maxX + pad),
-    maxY: clamp01(maxY + pad),
+    minX: minX - pad,
+    minY: minY - pad,
+    maxX: maxX + pad,
+    maxY: maxY + pad,
   };
 }
 
-function getManualBoxHandles(box) {
+function getManualBoxDisplayBox(box, width = 1, height = 1) {
+  if (!box) return null;
+  const insetX = Math.min(0.08, 14 / Math.max(1, width));
+  const insetY = Math.min(0.08, 14 / Math.max(1, height));
+  const minX = Math.max(insetX, Math.min(1 - insetX, box.minX));
+  const maxX = Math.max(insetX, Math.min(1 - insetX, box.maxX));
+  const minY = Math.max(insetY, Math.min(1 - insetY, box.minY));
+  const maxY = Math.max(insetY, Math.min(1 - insetY, box.maxY));
+  return {
+    minX: Math.min(minX, maxX),
+    minY: Math.min(minY, maxY),
+    maxX: Math.max(minX, maxX),
+    maxY: Math.max(minY, maxY),
+  };
+}
+
+function getManualBoxHandles(box, displayBox = box) {
   if (!box) return [];
-  const cx = (box.minX + box.maxX) / 2;
-  const cy = (box.minY + box.maxY) / 2;
+  const visible = displayBox || box;
+  const cx = (visible.minX + visible.maxX) / 2;
+  const cy = (visible.minY + visible.maxY) / 2;
   return [
-    { id: 'nw', x: box.minX, y: box.minY, cursor: 'nwse-resize' },
-    { id: 'n', x: cx, y: box.minY, cursor: 'ns-resize' },
-    { id: 'ne', x: box.maxX, y: box.minY, cursor: 'nesw-resize' },
-    { id: 'e', x: box.maxX, y: cy, cursor: 'ew-resize' },
-    { id: 'se', x: box.maxX, y: box.maxY, cursor: 'nwse-resize' },
-    { id: 's', x: cx, y: box.maxY, cursor: 'ns-resize' },
-    { id: 'sw', x: box.minX, y: box.maxY, cursor: 'nesw-resize' },
-    { id: 'w', x: box.minX, y: cy, cursor: 'ew-resize' },
+    { id: 'nw', x: visible.minX, y: visible.minY, cursor: 'nwse-resize' },
+    { id: 'n', x: cx, y: visible.minY, cursor: 'ns-resize' },
+    { id: 'ne', x: visible.maxX, y: visible.minY, cursor: 'nesw-resize' },
+    { id: 'e', x: visible.maxX, y: cy, cursor: 'ew-resize' },
+    { id: 'se', x: visible.maxX, y: visible.maxY, cursor: 'nwse-resize' },
+    { id: 's', x: cx, y: visible.maxY, cursor: 'ns-resize' },
+    { id: 'sw', x: visible.minX, y: visible.maxY, cursor: 'nesw-resize' },
+    { id: 'w', x: visible.minX, y: cy, cursor: 'ew-resize' },
   ];
 }
 
 function drawManualTransformBox(ctx, box, width, height) {
-  const x = box.minX * width;
-  const y = box.minY * height;
-  const w = Math.max(1, (box.maxX - box.minX) * width);
-  const h = Math.max(1, (box.maxY - box.minY) * height);
+  const displayBox = getManualBoxDisplayBox(box, width, height);
+  const x = displayBox.minX * width;
+  const y = displayBox.minY * height;
+  const w = Math.max(1, (displayBox.maxX - displayBox.minX) * width);
+  const h = Math.max(1, (displayBox.maxY - displayBox.minY) * height);
   ctx.save();
   ctx.strokeStyle = 'rgba(23,32,47,0.86)';
   ctx.lineWidth = 1.5;
@@ -2614,7 +2689,7 @@ function drawManualTransformBox(ctx, box, width, height) {
   ctx.fillStyle = 'rgba(255,255,255,0.96)';
   ctx.strokeStyle = 'rgba(37,84,166,0.95)';
   ctx.lineWidth = 2;
-  getManualBoxHandles(box).forEach(handle => {
+  getManualBoxHandles(box, displayBox).forEach(handle => {
     const hx = handle.x * width;
     const hy = handle.y * height;
     ctx.beginPath();
@@ -2636,11 +2711,12 @@ function getManualTransformHit(normPos) {
   if (!box) return { action: 'move', handle: null, box: null };
   const rect = EL.reportCanvas.getBoundingClientRect();
   const threshold = 12 / Math.max(1, Math.min(rect.width, rect.height));
-  const handle = getManualBoxHandles(box).find(item =>
+  const displayBox = getManualBoxDisplayBox(box, rect.width, rect.height);
+  const handle = getManualBoxHandles(box, displayBox).find(item =>
     Math.hypot(item.x - normPos.x, item.y - normPos.y) <= threshold
   );
   if (handle) return { action: 'scale', handle: handle.id, box };
-  const inside = normPos.x >= box.minX && normPos.x <= box.maxX && normPos.y >= box.minY && normPos.y <= box.maxY;
+  const inside = normPos.x >= displayBox.minX && normPos.x <= displayBox.maxX && normPos.y >= displayBox.minY && normPos.y <= displayBox.maxY;
   return { action: inside ? 'move' : 'move', handle: null, box };
 }
 
@@ -2658,7 +2734,9 @@ function updateManualCursor(normPos = null) {
   }
   const hit = getManualTransformHit(normPos);
   if (hit.action === 'scale' && hit.handle) {
-    overlay.style.cursor = getManualBoxHandles(hit.box).find(handle => handle.id === hit.handle)?.cursor || 'move';
+    const rect = EL.reportCanvas.getBoundingClientRect();
+    const displayBox = getManualBoxDisplayBox(hit.box, rect.width, rect.height);
+    overlay.style.cursor = getManualBoxHandles(hit.box, displayBox).find(handle => handle.id === hit.handle)?.cursor || 'move';
   } else {
     overlay.style.cursor = 'move';
   }
@@ -2711,7 +2789,8 @@ function handleManualPointerDown(event) {
 function handleManualPointerMove(event) {
   if (!isManualCorrectionActive()) return;
   const state = ensureManualCorrectionState();
-  const pos = getCanvasRelativePosition(event);
+  const tool = EL.manualCorrectionTool?.value || 'transform';
+  const pos = getCanvasRelativePosition(event, { clamp: !(state.pointer?.start && tool === 'transform') });
   if (!pos) return;
   if (!state.pointer?.start) {
     state.pointer = { current: pos };
@@ -2720,7 +2799,6 @@ function handleManualPointerMove(event) {
     return;
   }
   state.pointer.current = pos;
-  const tool = EL.manualCorrectionTool?.value || 'transform';
   const dx = pos.x - state.pointer.start.x;
   const dy = pos.y - state.pointer.start.y;
   if (tool === 'transform' && state.pointer.action === 'move') {
@@ -2908,7 +2986,7 @@ function drawHeatmap(options = {}) {
     }
     tc.putImageData(heat, 0, 0);
     ctx.drawImage(tmp, 0, 0);
-    if (includeLegend) drawLegend(ctx, canvas.width, canvas.height);
+    if (includeLegend) drawLegend(ctx, canvas.width, canvas.height, options.legendLabels);
     updateReportRangeStatus(run, data.length);
     drawManualOverlay();
     options.onComplete?.(canvas);
@@ -3045,15 +3123,18 @@ function drawGazePlot(options = {}) {
   img.src = imageSrc;
 }
 
-function drawLegend(ctx, w, h) {
-  const lw = Math.min(160, w * 0.28);
-  const lh = 11;
-  const x  = w - lw - 14;
-  const y  = h - 34;
+function drawLegend(ctx, w, h, labels = {}) {
+  const lowLabel = labels.low || localizeText('低');
+  const highLabel = labels.high || localizeText('高');
+  const titleLabel = labels.title || localizeText('注意力密度');
+  const lw = Math.min(360, Math.max(240, w * 0.24));
+  const lh = Math.max(18, Math.min(28, w * 0.012));
+  const x  = w - lw - 28;
+  const y  = h - 58;
 
   ctx.fillStyle = 'rgba(0,0,0,0.5)';
   ctx.beginPath();
-  ctx.roundRect(x - 8, y - 18, lw + 16, lh + 30, 6);
+  ctx.roundRect(x - 12, y - 30, lw + 24, lh + 48, 8);
   ctx.fill();
 
   const g = ctx.createLinearGradient(x, 0, x + lw, 0);
@@ -3066,15 +3147,16 @@ function drawLegend(ctx, w, h) {
   ctx.fillRect(x, y, lw, lh);
 
   ctx.fillStyle    = 'rgba(255,255,255,0.75)';
-  ctx.font         = '10px Inter,sans-serif';
+  ctx.font         = '15px Inter,sans-serif';
   ctx.textAlign    = 'left';
   ctx.textBaseline = 'top';
-  ctx.fillText(localizeText('低'), x, y + lh + 3);
+  ctx.fillText(lowLabel, x, y + lh + 5);
   ctx.textAlign = 'right';
-  ctx.fillText(localizeText('高'), x + lw, y + lh + 3);
+  ctx.fillText(highLabel, x + lw, y + lh + 5);
   ctx.textAlign    = 'center';
   ctx.fillStyle    = 'rgba(255,255,255,0.55)';
-  ctx.fillText(localizeText('注意力密度'), x + lw / 2, y - 14);
+  ctx.font         = '14px Inter,sans-serif';
+  ctx.fillText(titleLabel, x + lw / 2, y - 22);
 }
 
 // ─── 聚合数据分析 ────────────────────────────────────────────────
@@ -3729,6 +3811,7 @@ function renderVisualizationCanvas(mode, run, data, options = {}) {
       data,
       includeBackground: options.includeBackground ?? true,
       includeLegend: options.includeLegend ?? (mode === 'heatmap'),
+      legendLabels: options.legendLabels,
       useNaturalSize: true,
       silentEmpty: options.silentEmpty ?? false,
       onError: reject,
@@ -3780,6 +3863,169 @@ function drawFigureMetric(ctx, label, value, x, y, w, h, accent = '#2554a6') {
   ctx.fillText(value, x + 24, y + 54);
 }
 
+function getAcademicConditionLabel(run) {
+  const meta = getImageConditionMeta(run?.image);
+  if (meta.condition === 'experiment') return 'Experimental';
+  if (meta.condition === 'control') return 'Control';
+  if (meta.condition === 'external') return 'External';
+  return 'Ungrouped';
+}
+
+function getAcademicCorrectionLabel(mode) {
+  return {
+    raw: 'Raw coordinates',
+    shift: 'Center-shift correction',
+    stretch: 'Range-stretch correction',
+    auto: 'Auto correction',
+    manual: 'Manual correction',
+  }[mode] || 'Raw coordinates';
+}
+
+function normalizeAcademicText(value, fallback) {
+  return String(value || fallback || '')
+    .replace(/当前参与者/g, 'Current participant')
+    .replace(/未知参与者/g, 'Unknown participant')
+    .replace(/未知图片/g, 'Unknown image')
+    .replace(/未命名图片/g, 'Unnamed image')
+    .replace(/外部图片/g, 'External image')
+    .replace(/修正版/g, 'Corrected Version ')
+    .replace(/对照组/g, 'Control')
+    .replace(/实验组/g, 'Experimental')
+    .replace(/未分组/g, 'Ungrouped')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function getAcademicPointPositions(run, data) {
+  return data
+    .map(point => {
+      const raw = getRawA4Position(point, run);
+      if (!raw) return null;
+      const corrected = applyA4Correction(raw, run);
+      return {
+        x: clamp01(corrected.x),
+        y: clamp01(corrected.y),
+      };
+    })
+    .filter(Boolean);
+}
+
+function computeAcademicAttentionMetrics(run, data, range) {
+  const positions = getAcademicPointPositions(run, data);
+  const sampleCount = data.length;
+  const duration = Math.max(0, Number(range?.end) - Number(range?.start)) || Math.max(0, Number(run?.duration) || 0);
+
+  const coverageGrid = 42;
+  const occupied = new Set();
+  positions.forEach(pos => {
+    const col = Math.min(coverageGrid - 1, Math.max(0, Math.floor(pos.x * coverageGrid)));
+    const row = Math.min(coverageGrid - 1, Math.max(0, Math.floor(pos.y * coverageGrid)));
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        const x = col + dx;
+        const y = row + dy;
+        if (x >= 0 && x < coverageGrid && y >= 0 && y < coverageGrid) occupied.add(`${x}:${y}`);
+      }
+    }
+  });
+  const readingCoverage = positions.length ? occupied.size / (coverageGrid * coverageGrid) : 0;
+
+  const densityGrid = 32;
+  const density = new Map();
+  const sequence = positions.map(pos => {
+    const col = Math.min(densityGrid - 1, Math.max(0, Math.floor(pos.x * densityGrid)));
+    const row = Math.min(densityGrid - 1, Math.max(0, Math.floor(pos.y * densityGrid)));
+    const key = `${col}:${row}`;
+    density.set(key, (density.get(key) || 0) + 1);
+    return key;
+  });
+  const maxDensity = Math.max(0, ...density.values());
+  const yellowThreshold = Math.max(3, Math.ceil(maxDensity * 0.62));
+  const deepCells = new Set([...density.entries()]
+    .filter(([, count]) => count >= yellowThreshold)
+    .map(([key]) => key));
+  let deepReadingCount = 0;
+  let wasDeep = false;
+  sequence.forEach(key => {
+    const isDeep = deepCells.has(key);
+    if (isDeep && !wasDeep) deepReadingCount += 1;
+    wasDeep = isDeep;
+  });
+
+  return {
+    sampleCount,
+    duration,
+    readingCoverage,
+    deepReadingCount,
+  };
+}
+
+async function renderAcademicFigureCanvas(run, data, options = {}) {
+  const mode = options.mode || getCurrentVizMode();
+  const source = await renderVisualizationCanvas(mode, run, data, {
+    includeBackground: true,
+    includeLegend: mode === 'heatmap',
+    legendLabels: {
+      low: 'Low',
+      high: 'High',
+      title: 'Attention Density',
+    },
+  });
+  const record = findRunRecord(run);
+  const range = options.range || getReportTimeRange(run);
+  const correctionMode = resolveCorrectionMode(run, State.reportCorrectionMode);
+  const metrics = computeAcademicAttentionMetrics(run, data, range);
+  const figure = document.createElement('canvas');
+  const width = 2200;
+  const margin = 140;
+  const imageWidth = width - margin * 2;
+  const scale = Math.min(1, imageWidth / source.width);
+  const imageHeight = Math.round(source.height * scale);
+  const headerH = 210;
+  const metricsH = 170;
+  const footerH = 92;
+  figure.width = width;
+  figure.height = headerH + imageHeight + metricsH + footerH;
+
+  const ctx = figure.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, figure.width, figure.height);
+  ctx.fillStyle = '#17202f';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.font = '700 54px Inter, Arial, sans-serif';
+  ctx.fillText(mode === 'heatmap' ? 'Gaze Heatmap Analysis' : 'Gaze Sequence Analysis', margin, 70);
+  ctx.font = '28px Inter, Arial, sans-serif';
+  ctx.fillStyle = '#596579';
+  const subtitle = [
+    normalizeAcademicText(record?.session?.label, 'Unknown participant'),
+    normalizeAcademicText(run.image?.name, 'Unknown image'),
+    getAcademicConditionLabel(run),
+    `${range.start.toFixed(1)}-${range.end.toFixed(1)} s`,
+    getAcademicCorrectionLabel(correctionMode),
+  ].join(' · ');
+  drawFigureText(ctx, subtitle, margin, 138, imageWidth, 34, { maxLines: 2 });
+
+  const imgX = margin;
+  const imgY = headerH;
+  ctx.strokeStyle = '#b9c5d6';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(imgX - 1, imgY - 1, imageWidth + 2, imageHeight + 2);
+  ctx.drawImage(source, imgX, imgY, imageWidth, imageHeight);
+
+  const metricsY = imgY + imageHeight + 48;
+  const cardGap = 28;
+  const cardW = (imageWidth - cardGap * 2) / 3;
+  drawFigureMetric(ctx, 'Samples / Duration', `${metrics.sampleCount.toLocaleString('en-US')} / ${metrics.duration.toFixed(1)} s`, margin, metricsY, cardW, 118, '#2554a6');
+  drawFigureMetric(ctx, 'Reading Coverage', `${(metrics.readingCoverage * 100).toFixed(1)}%`, margin + (cardW + cardGap), metricsY, cardW, 118, '#1d8fa3');
+  drawFigureMetric(ctx, 'Deep Reading Episodes', metrics.deepReadingCount.toLocaleString('en-US'), margin + (cardW + cardGap) * 2, metricsY, cardW, 118, '#d97a2b');
+
+  ctx.fillStyle = '#8792a3';
+  ctx.font = '20px Inter, Arial, sans-serif';
+  ctx.fillText(`Generated by SIGN Visual Attention v3 · ${new Date().toLocaleString('en-US', { hour12: false })}`, margin, figure.height - 52);
+  return figure;
+}
+
 async function exportAcademicFigure() {
   const run = State.currentReportRun;
   if (!run) {
@@ -3796,74 +4042,126 @@ async function exportAcademicFigure() {
   }
 
   try {
-    const source = await renderVisualizationCanvas(mode, run, data, {
-      includeBackground: true,
-      includeLegend: mode === 'heatmap',
+    const figure = await renderAcademicFigureCanvas(run, data, {
+      mode,
+      range: getReportTimeRange(run),
     });
     const record = findRunRecord(run);
-    const metric = getMetricForRun(run);
-    const range = getReportTimeRange(run);
-    const correctionMode = resolveCorrectionMode(run, State.reportCorrectionMode);
-    const figure = document.createElement('canvas');
-    const width = 2200;
-    const margin = 140;
-    const imageWidth = width - margin * 2;
-    const scale = Math.min(1, imageWidth / source.width);
-    const imageHeight = Math.round(source.height * scale);
-    const headerH = 210;
-    const metricsH = 190;
-    const footerH = 120;
-    figure.width = width;
-    figure.height = headerH + imageHeight + metricsH + footerH;
-
-    const ctx = figure.getContext('2d');
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, figure.width, figure.height);
-    ctx.fillStyle = '#17202f';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-    ctx.font = '700 54px Inter, Arial, sans-serif';
-    ctx.fillText(localizeText(mode === 'heatmap' ? '视线热力图分析' : '视线序列分析'), margin, 70);
-    ctx.font = '28px Inter, Arial, sans-serif';
-    ctx.fillStyle = '#596579';
-    const subtitle = [
-      record?.session?.label || localizeText('未知参与者'),
-      run.image?.name || localizeText('未知图片'),
-      localizeText(getRunConditionLabel(run)),
-      `${range.start.toFixed(1)}-${range.end.toFixed(1)} s`,
-      correctionMode === 'raw' ? localizeText('原始坐标') : `${correctionMode} ${localizeText('修正预览')}`,
-    ].join(' · ');
-    drawFigureText(ctx, subtitle, margin, 138, imageWidth, 34, { maxLines: 2 });
-
-    const imgX = margin;
-    const imgY = headerH;
-    ctx.strokeStyle = '#b9c5d6';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(imgX - 1, imgY - 1, imageWidth + 2, imageHeight + 2);
-    ctx.drawImage(source, imgX, imgY, imageWidth, imageHeight);
-
-    const metricsY = imgY + imageHeight + 54;
-    const cardGap = 24;
-    const cardW = (imageWidth - cardGap * 3) / 4;
-    drawFigureMetric(ctx, localizeText('样本数'), data.length.toLocaleString(), margin, metricsY, cardW, 118, '#2554a6');
-    drawFigureMetric(ctx, localizeText('有效坐标率'), formatPercent(metric.validRate), margin + (cardW + cardGap), metricsY, cardW, 118, '#1d8fa3');
-    drawFigureMetric(ctx, localizeText('平均位置'), metric.meanX == null ? '—' : `${formatMetric(metric.meanX, 2)} / ${formatMetric(metric.meanY, 2)}`, margin + (cardW + cardGap) * 2, metricsY, cardW, 118, '#d97a2b');
-    drawFigureMetric(ctx, localizeText('质控标记'), metric.anomalyFlags.length ? localizeText(metric.anomalyLabel) : localizeText('未发现技术标记'), margin + (cardW + cardGap) * 3, metricsY, cardW, 118, metric.anomalyFlags.length ? '#c8423f' : '#1f7a5c');
-
-    ctx.fillStyle = '#596579';
-    ctx.font = '24px Inter, Arial, sans-serif';
-    const note = localizeText(metric.coverageNote || metric.offsetNote || metric.repairSuggestion || '可视化保留原始数据；修正模式仅影响预览和导出。');
-    drawFigureText(ctx, note, margin, metricsY + 142, imageWidth, 32, { maxLines: 2 });
-    ctx.fillStyle = '#8792a3';
-    ctx.font = '20px Inter, Arial, sans-serif';
-    ctx.fillText(`${localizeText('由 SIGN Visual Attention 生成')} · ${new Date().toLocaleString(getDisplayLocale(), { hour12: false })}`, margin, figure.height - 58);
-
     downloadCanvasPng(
       `academic_${mode}_${safeFileName(record?.session?.label || 'participant')}_${safeFileName(run.image?.name || 'image')}.png`,
       figure
     );
   } catch (err) {
     alert(`无法导出学术图片：${err.message}`);
+  }
+}
+
+function getAcademicBatchRecordLabel(record, index) {
+  const run = record.run;
+  const participant = normalizeAcademicText(record.session?.label, `Participant ${index + 1}`);
+  const imageName = normalizeAcademicText(run.image?.name, 'Unknown image');
+  const condition = getAcademicConditionLabel(run);
+  return `${participant} · ${imageName} · ${condition}`;
+}
+
+function getAcademicBatchRecordMeta(record) {
+  const run = record.run;
+  const points = Array.isArray(run.points) ? run.points.length : 0;
+  const duration = Math.max(0, Number(run.duration) || 0);
+  return `${points.toLocaleString()} points · ${duration.toFixed(1)} s`;
+}
+
+function renderAcademicBatchOptions(records) {
+  State.academicBatchRecords = records;
+  if (EL.academicBatchSummary) {
+    EL.academicBatchSummary.textContent = `${records.length.toLocaleString()} ${localizeText('记录')} · ${localizeText('按当前分析范围选择需要导出的追踪记录。')}`;
+  }
+  if (!EL.academicBatchList) return;
+  EL.academicBatchList.innerHTML = records.map((record, index) => `
+    <label class="academic-batch-option">
+      <input type="checkbox" class="academic-batch-checkbox" value="${index}" checked />
+      <span>
+        <strong>${escapeHtml(getAcademicBatchRecordLabel(record, index))}</strong>
+        <span>${escapeHtml(getAcademicBatchRecordMeta(record))}</span>
+      </span>
+    </label>
+  `).join('');
+}
+
+function openAcademicBatchExportMenu() {
+  const records = getScopedAnalysisRecords();
+  if (!records.length) {
+    alert('暂无可导出的分析数据');
+    return;
+  }
+  renderAcademicBatchOptions(records);
+  showModal(EL.academicBatchModal);
+}
+
+function setAcademicBatchSelection(checked) {
+  EL.academicBatchList?.querySelectorAll('.academic-batch-checkbox')
+    .forEach(input => { input.checked = checked; });
+}
+
+function getSelectedAcademicBatchRecords() {
+  const records = State.academicBatchRecords || [];
+  return Array.from(EL.academicBatchList?.querySelectorAll('.academic-batch-checkbox:checked') || [])
+    .map(input => records[Number(input.value)])
+    .filter(Boolean);
+}
+
+async function startSelectedAcademicBatchExport() {
+  const records = getSelectedAcademicBatchRecords();
+  if (!records.length) {
+    alert('请至少选择一条记录。');
+    return;
+  }
+  hideModal(EL.academicBatchModal);
+  await exportAcademicFiguresBatch(records);
+}
+
+async function exportAcademicFiguresBatch(records = getScopedAnalysisRecords()) {
+  if (!records.length) {
+    alert('暂无可导出的分析数据');
+    return;
+  }
+
+  const mode = getCurrentVizMode();
+  const originalCorrectionMode = State.reportCorrectionMode;
+  if (originalCorrectionMode === 'manual') {
+    State.reportCorrectionMode = 'raw';
+  }
+
+  EL.exportAcademicBatchBtn.disabled = true;
+  let exported = 0;
+  let skipped = 0;
+  try {
+    for (const record of records) {
+      const run = record.run;
+      const data = Array.isArray(run.points) ? run.points : [];
+      const minPoints = mode === 'heatmap' ? 3 : 2;
+      if (data.length < minPoints) {
+        skipped += 1;
+        continue;
+      }
+      const duration = Math.max(0, Number(run.duration) || 0);
+      const figure = await renderAcademicFigureCanvas(run, data, {
+        mode,
+        range: { start: 0, end: duration, duration },
+      });
+      downloadCanvasPng(
+        `academic_${mode}_${safeFileName(record.session?.label || 'participant')}_${safeFileName(run.image?.name || 'image')}.png`,
+        figure
+      );
+      exported += 1;
+      await wait(250);
+    }
+    alert(`批量导出完成：${exported} 张${skipped ? `，跳过 ${skipped} 条点数不足记录` : ''}`);
+  } catch (err) {
+    alert(`无法导出学术图片：${err.message}`);
+  } finally {
+    State.reportCorrectionMode = originalCorrectionMode;
+    EL.exportAcademicBatchBtn.disabled = false;
   }
 }
 
@@ -3886,6 +4184,20 @@ function createCorrectedVersionId(session, sourceRun) {
   return id;
 }
 
+function getManualSaveEntries(sourceRun, state) {
+  const excluded = state?.excluded || new Set();
+  const retain = ({ point, index }) => !excluded.has(getPointIdentity(point, index));
+  const rangedEntries = getTimeFilteredReportPoints(sourceRun).filter(retain);
+  if (rangedEntries.length) {
+    return { entries: rangedEntries, usedFallback: false };
+  }
+
+  const allEntries = (sourceRun?.points || [])
+    .map((point, index) => ({ point, index }))
+    .filter(retain);
+  return { entries: allEntries, usedFallback: true };
+}
+
 function saveCorrectedVersion() {
   const sourceRun = State.currentReportRun;
   const record = findRunRecord(sourceRun);
@@ -3900,10 +4212,9 @@ function saveCorrectedVersion() {
 
   const state = ensureManualCorrectionState(sourceRun);
   const range = getReportTimeRange(sourceRun);
-  const entries = getTimeFilteredReportPoints(sourceRun)
-    .filter(({ point, index }) => !state.excluded.has(getPointIdentity(point, index)));
-  if (entries.length < 3) {
-    alert('当前有效时间段或涂抹后剩余数据点不足，无法另存为修正版。');
+  const { entries, usedFallback } = getManualSaveEntries(sourceRun, state);
+  if (!entries.length) {
+    alert('没有可保存的数据点。请调整有效时间段或恢复被涂抹的点。');
     return;
   }
 
@@ -3933,7 +4244,7 @@ function saveCorrectedVersion() {
     id: createCorrectedVersionId(record.session, sourceRun),
     startedAt: sourceRun.startedAt,
     endedAt: new Date().toISOString(),
-    duration: Math.max(0, range.end - range.start),
+    duration: usedFallback ? Math.max(0, Number(sourceRun.duration) || 0) : Math.max(0, range.end - range.start),
     image: {
       ...sourceRun.image,
       name: `${sourceRun.image?.name || 'image'} 修正版${versionNo}`,
@@ -3947,7 +4258,9 @@ function saveCorrectedVersion() {
     manualCorrection: {
       sourceRunId: sourceRun.id,
       createdAt: new Date().toISOString(),
-      timeRange: { start: range.start, end: range.end },
+      timeRange: usedFallback
+        ? { start: 0, end: Math.max(0, Number(sourceRun.duration) || 0), fallbackToFullRun: true }
+        : { start: range.start, end: range.end },
       offsetX: state.offsetX,
       offsetY: state.offsetY,
       scaleX: state.scaleX,
@@ -3959,7 +4272,9 @@ function saveCorrectedVersion() {
   };
 
   const sourceIndex = record.session.runs.findIndex(run => run === sourceRun || run.id === sourceRun.id);
-  record.session.runs.splice(sourceIndex + 1, 0, correctedRun);
+  if (sourceIndex >= 0) record.session.runs.splice(sourceIndex + 1, 0, correctedRun);
+  else record.session.runs.push(correctedRun);
+  State.selectedSessionId = record.session.id;
   State.currentReportRun = correctedRun;
   State.gazeHistory = correctedRun.points;
   State.uploadedImageSrc = correctedRun.imageSrc;
@@ -3974,6 +4289,7 @@ function saveCorrectedVersion() {
   updateReportFromCurrentRun();
   updateAnalysisDashboard();
   updateManualCorrectionPanel();
+  alert(`已另存为修正版：${correctedRun.image.name}`);
 }
 
 function exportAnalysisFigure() {
@@ -4515,6 +4831,12 @@ function bindEvents() {
   EL.gazePlaybackBtn.addEventListener('click', toggleGazePlayback);
   EL.exportVizLayerBtn.addEventListener('click', exportTransparentVizLayer);
   EL.exportAcademicFigureBtn.addEventListener('click', exportAcademicFigure);
+  EL.exportAcademicBatchBtn.addEventListener('click', openAcademicBatchExportMenu);
+  EL.academicBatchSelectAllBtn?.addEventListener('click', () => setAcademicBatchSelection(true));
+  EL.academicBatchClearBtn?.addEventListener('click', () => setAcademicBatchSelection(false));
+  EL.academicBatchCancelBtn?.addEventListener('click', () => hideModal(EL.academicBatchModal));
+  EL.academicBatchCancelSecondaryBtn?.addEventListener('click', () => hideModal(EL.academicBatchModal));
+  EL.academicBatchStartBtn?.addEventListener('click', startSelectedAcademicBatchExport);
   EL.singleAnalysisTab.addEventListener('click', () => setReportMode('single'));
   EL.overallAnalysisTab.addEventListener('click', () => setReportMode('overall'));
   EL.analysisScopeSelect.addEventListener('change', updateAnalysisDashboard);

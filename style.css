@@ -226,6 +226,85 @@ select:focus-visible {
 
 .modal-overlay.active .modal-card { transform: translateY(0); }
 
+.academic-batch-card {
+  width: min(760px, 100%);
+  max-height: min(760px, calc(100vh - 40px));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.academic-batch-head,
+.academic-batch-toolbar,
+.academic-batch-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.academic-batch-head .modal-title,
+.academic-batch-head .modal-desc {
+  margin: 0;
+}
+
+.academic-batch-close {
+  flex: 0 0 auto;
+}
+
+.academic-batch-toolbar {
+  justify-content: flex-start;
+}
+
+.academic-batch-list {
+  min-height: 160px;
+  max-height: 430px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: #f8fafc;
+}
+
+.academic-batch-option {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.academic-batch-option:last-child {
+  border-bottom: 0;
+}
+
+.academic-batch-option:hover {
+  background: #eef4fb;
+}
+
+.academic-batch-option input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--heat-blue);
+}
+
+.academic-batch-option strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.academic-batch-option span {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .modal-icon {
   display: flex;
   justify-content: center;
@@ -1921,6 +2000,7 @@ select:focus-visible {
   align-items: center;
   justify-content: center;
   min-height: 400px;
+  overflow: hidden;
   padding: 0;
   background:
     linear-gradient(45deg, #e2e8f0 25%, transparent 25%),
@@ -1935,7 +2015,9 @@ select:focus-visible {
 #report-canvas {
   display: block;
   max-width: 100%;
-  max-height: 70vh;
+  max-height: 100%;
+  width: auto;
+  height: auto;
 }
 
 .manual-correction-canvas {
