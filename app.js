@@ -1018,7 +1018,23 @@ function updateHomeDataSummary() {
 
 function findRunRecord(targetRun = State.currentReportRun) {
   if (!targetRun) return null;
-  return getAllTrackingRuns().find(record => record.run === targetRun || record.run.id === targetRun.id) || null;
+  const records = getAllTrackingRuns();
+  const exact = records.find(record => record.run === targetRun);
+  if (exact) return exact;
+
+  const selectedSession = State.calibrationSessions.find(session => session.id === State.selectedSessionId);
+  if (selectedSession) {
+    const runIndex = selectedSession.runs.findIndex(run => run.id === targetRun.id);
+    if (runIndex >= 0) {
+      return {
+        session: selectedSession,
+        run: selectedSession.runs[runIndex],
+        trialIndex: runIndex + 1,
+      };
+    }
+  }
+
+  return records.find(record => record.run.id === targetRun.id) || null;
 }
 
 function selectSession(sessionId) {
@@ -1797,7 +1813,7 @@ function updateCalibProgress() {
 
 function onCalibrationComplete() {
   EL.calibStatusText.textContent = '校准完成！';
-  EL.calibProgressFill.style.background = 'linear-gradient(90deg, #059669, #34D399)';
+  EL.calibProgressFill.style.background = 'linear-gradient(90deg, #d3ad3f, #b9c64b, #83963a)';
 
   setTimeout(() => {
     createCalibrationSession();
@@ -2576,7 +2592,7 @@ function drawManualOverlay() {
     const excluded = state.excluded.has(getPointIdentity(point, index));
     ctx.beginPath();
     ctx.arc(corrected.x * width, corrected.y * height, excluded ? 4 : 2.2, 0, Math.PI * 2);
-    ctx.fillStyle = excluded ? 'rgba(200,66,63,0.86)' : 'rgba(37,84,166,0.36)';
+    ctx.fillStyle = excluded ? 'rgba(200,66,63,0.86)' : 'rgba(131,150,58,0.38)';
     ctx.fill();
     if (excluded) {
       ctx.strokeStyle = 'rgba(255,255,255,0.9)';
@@ -2594,7 +2610,7 @@ function drawManualOverlay() {
   if (pointer && (tool === 'erase' || tool === 'restore')) {
     ctx.beginPath();
     ctx.arc(pointer.x * width, pointer.y * height, state.brushRadius * Math.min(width, height), 0, Math.PI * 2);
-    ctx.strokeStyle = tool === 'erase' ? 'rgba(200,66,63,0.9)' : 'rgba(31,122,92,0.9)';
+    ctx.strokeStyle = tool === 'erase' ? 'rgba(200,66,63,0.9)' : 'rgba(131,150,58,0.92)';
     ctx.lineWidth = 2;
     ctx.stroke();
   }
@@ -2687,7 +2703,7 @@ function drawManualTransformBox(ctx, box, width, height) {
   ctx.strokeRect(x, y, w, h);
   ctx.setLineDash([]);
   ctx.fillStyle = 'rgba(255,255,255,0.96)';
-  ctx.strokeStyle = 'rgba(37,84,166,0.95)';
+  ctx.strokeStyle = 'rgba(131,150,58,0.95)';
   ctx.lineWidth = 2;
   getManualBoxHandles(box, displayBox).forEach(handle => {
     const hx = handle.x * width;
@@ -3424,7 +3440,10 @@ function getScopedAnalysisRecords() {
   if (scope === 'session' && State.selectedSessionId) {
     records = records.filter(record => record.session.id === State.selectedSessionId);
   } else if (scope === 'run' && State.currentReportRun) {
-    records = records.filter(record => record.run === State.currentReportRun || record.run.id === State.currentReportRun.id);
+    const currentRecord = findRunRecord(State.currentReportRun);
+    records = currentRecord
+      ? records.filter(record => record.session.id === currentRecord.session.id && (record.run === currentRecord.run || record.run.id === currentRecord.run.id))
+      : [];
   }
 
   if (imageFilter !== 'all') {
@@ -3843,7 +3862,7 @@ function drawFigureText(ctx, text, x, y, maxWidth, lineHeight, options = {}) {
   return Math.min(lines.length, limit) * lineHeight;
 }
 
-function drawFigureMetric(ctx, label, value, x, y, w, h, accent = '#2554a6') {
+function drawFigureMetric(ctx, label, value, x, y, w, h, accent = '#d3ad3f') {
   ctx.fillStyle = '#f8fafc';
   ctx.strokeStyle = '#d9e0ea';
   ctx.lineWidth = 2;
@@ -4016,9 +4035,9 @@ async function renderAcademicFigureCanvas(run, data, options = {}) {
   const metricsY = imgY + imageHeight + 48;
   const cardGap = 28;
   const cardW = (imageWidth - cardGap * 2) / 3;
-  drawFigureMetric(ctx, 'Samples / Duration', `${metrics.sampleCount.toLocaleString('en-US')} / ${metrics.duration.toFixed(1)} s`, margin, metricsY, cardW, 118, '#2554a6');
-  drawFigureMetric(ctx, 'Reading Coverage', `${(metrics.readingCoverage * 100).toFixed(1)}%`, margin + (cardW + cardGap), metricsY, cardW, 118, '#1d8fa3');
-  drawFigureMetric(ctx, 'Deep Reading Episodes', metrics.deepReadingCount.toLocaleString('en-US'), margin + (cardW + cardGap) * 2, metricsY, cardW, 118, '#d97a2b');
+  drawFigureMetric(ctx, 'Samples / Duration', `${metrics.sampleCount.toLocaleString('en-US')} / ${metrics.duration.toFixed(1)} s`, margin, metricsY, cardW, 118, '#d3ad3f');
+  drawFigureMetric(ctx, 'Reading Coverage', `${(metrics.readingCoverage * 100).toFixed(1)}%`, margin + (cardW + cardGap), metricsY, cardW, 118, '#b9c64b');
+  drawFigureMetric(ctx, 'Deep Reading Episodes', metrics.deepReadingCount.toLocaleString('en-US'), margin + (cardW + cardGap) * 2, metricsY, cardW, 118, '#83963a');
 
   ctx.fillStyle = '#8792a3';
   ctx.font = '20px Inter, Arial, sans-serif';
@@ -4325,11 +4344,11 @@ function exportAnalysisFigure() {
   );
 
   const cards = [
-    [localizeText('参与者'), snapshot.overall.participants.toLocaleString(), '#2554a6'],
-    [localizeText('记录'), snapshot.overall.runs.toLocaleString(), '#1d8fa3'],
-    [localizeText('有效率'), formatPercent(snapshot.overall.validRate), '#1f7a5c'],
-    [localizeText('平均 FPS'), `${formatMetric(snapshot.overall.fpsAvg, 1)} Hz`, '#d97a2b'],
-    [localizeText('质控标记数'), snapshot.overall.anomalyRuns.toLocaleString(), snapshot.overall.anomalyRuns ? '#c8423f' : '#1f7a5c'],
+    [localizeText('参与者'), snapshot.overall.participants.toLocaleString(), '#d3ad3f'],
+    [localizeText('记录'), snapshot.overall.runs.toLocaleString(), '#b9c64b'],
+    [localizeText('有效率'), formatPercent(snapshot.overall.validRate), '#83963a'],
+    [localizeText('平均 FPS'), `${formatMetric(snapshot.overall.fpsAvg, 1)} Hz`, '#536b28'],
+    [localizeText('质控标记数'), snapshot.overall.anomalyRuns.toLocaleString(), snapshot.overall.anomalyRuns ? '#c8423f' : '#83963a'],
   ];
   const cardGap = 22;
   const cardW = (canvas.width - margin * 2 - cardGap * (cards.length - 1)) / cards.length;
@@ -4350,7 +4369,7 @@ function exportAnalysisFigure() {
     const barW = (group.summary.runs / maxRuns) * chartW;
     ctx.fillStyle = '#eef2f6';
     ctx.fillRect(chartX, y, chartW, 34);
-    ctx.fillStyle = group.key === '实验组' ? '#c8423f' : '#2554a6';
+    ctx.fillStyle = group.key === '实验组' ? '#83963a' : '#d3ad3f';
     ctx.fillRect(chartX, y, barW, 34);
     ctx.fillStyle = '#17202f';
     ctx.font = '24px Inter, Arial, sans-serif';
@@ -4371,7 +4390,7 @@ function exportAnalysisFigure() {
     const y = zoneY + row * (cell + 16);
     const ratio = snapshot.overall.validPoints ? count / snapshot.overall.validPoints : 0;
     const alpha = 0.08 + (count / maxZone) * 0.46;
-    ctx.fillStyle = `rgba(37,84,166,${alpha})`;
+    ctx.fillStyle = `rgba(211,173,63,${alpha})`;
     ctx.strokeStyle = '#d9e0ea';
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -4394,7 +4413,7 @@ function exportAnalysisFigure() {
   ctx.font = '28px Inter, Arial, sans-serif';
   let noteY = 1110;
   snapshot.insights.slice(0, 6).forEach((insight, index) => {
-    ctx.fillStyle = index === 0 ? '#2554a6' : '#596579';
+    ctx.fillStyle = index === 0 ? '#83963a' : '#596579';
     noteY += drawFigureText(ctx, `${index + 1}. ${localizeText(insight)}`, margin, noteY, 1900, 40, { maxLines: 2 }) + 12;
   });
   ctx.fillStyle = '#8792a3';
