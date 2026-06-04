@@ -1421,28 +1421,29 @@ select:focus-visible {
 }
 
 #report-screen.report-mode-single .data-workbench {
-  grid-template-columns: minmax(180px, 0.75fr) minmax(240px, 1fr) minmax(280px, 1.2fr);
-  gap: 10px;
-  margin-bottom: 10px;
+  grid-template-columns: minmax(300px, 0.9fr) minmax(420px, 1.4fr);
+  gap: 14px;
+  margin-bottom: 14px;
 }
 
 #report-screen.report-mode-single .data-panel {
-  min-height: auto;
-  padding: 10px;
+  min-height: 290px;
+  padding: 14px;
 }
 
 #report-screen.report-mode-single .data-panel-head {
-  margin-bottom: 6px;
+  margin-bottom: 10px;
 }
 
 #report-screen.report-mode-single .participant-list,
 #report-screen.report-mode-single .run-list {
-  gap: 6px;
-  max-height: 118px;
+  gap: 8px;
+  max-height: 310px;
 }
 
 #report-screen.report-mode-single .data-item {
-  padding: 8px;
+  min-height: 54px;
+  padding: 10px 12px;
 }
 
 #report-screen.report-mode-single .data-panel-note {
@@ -1450,9 +1451,14 @@ select:focus-visible {
   line-height: 1.45;
 }
 
+#report-screen.report-mode-single .data-panel-wide {
+  grid-column: 1 / -1;
+  min-height: auto;
+}
+
 #report-screen.report-mode-single .viz-container {
   min-height: 390px;
-  height: calc(100vh - 300px);
+  height: calc(100vh - 520px);
 }
 
 #report-screen.report-mode-single .viz-tabs,
@@ -1730,12 +1736,42 @@ select:focus-visible {
 
 .data-panel-head strong { color: var(--text-primary); }
 
+.data-panel-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.data-delete-btn {
+  min-height: 28px;
+  padding: 4px 9px;
+  border: 1px solid #efc8c6;
+  border-radius: var(--radius-sm);
+  color: var(--danger);
+  background: var(--danger-soft);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  transition: background var(--transition), border-color var(--transition), opacity var(--transition);
+}
+
+.data-delete-btn:hover:not(:disabled) {
+  border-color: var(--danger);
+  background: #f6dedd;
+}
+
+.data-delete-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
 .participant-list,
 .run-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 230px;
+  max-height: 360px;
   overflow: auto;
 }
 

@@ -203,7 +203,7 @@
     </div>
     <div class="report-header-actions report-primary-actions">
       <button class="btn btn-archive" id="export-archive-btn">
-        导出存档
+        更新全部存档文件夹
       </button>
       <button class="btn btn-primary" id="back-home-btn">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -223,14 +223,20 @@
     <div class="data-panel">
       <div class="data-panel-head">
         <span>参与者</span>
-        <strong id="participant-count">0</strong>
+        <div class="data-panel-head-actions">
+          <strong id="participant-count">0</strong>
+          <button class="data-delete-btn" id="delete-participant-btn" type="button" title="删除当前参与者" disabled>删除</button>
+        </div>
       </div>
       <div id="participant-list" class="participant-list"></div>
     </div>
     <div class="data-panel">
       <div class="data-panel-head">
         <span>追踪记录</span>
-        <strong id="run-count">0</strong>
+        <div class="data-panel-head-actions">
+          <strong id="run-count">0</strong>
+          <button class="data-delete-btn" id="delete-run-btn" type="button" title="删除当前记录" disabled>删除</button>
+        </div>
       </div>
       <div id="run-list" class="run-list"></div>
     </div>
@@ -403,9 +409,9 @@
     </div>
 
     <div class="analysis-actions">
-      <button class="btn btn-ghost" id="export-analysis-csv-btn">导出分析 CSV</button>
-      <button class="btn btn-ghost" id="export-analysis-json-btn">导出分析 JSON</button>
-      <button class="btn btn-primary" id="export-analysis-figure-btn">导出整体分析图</button>
+      <button class="btn btn-ghost hidden" id="export-analysis-csv-btn">导出分析 CSV</button>
+      <button class="btn btn-ghost hidden" id="export-analysis-json-btn">导出分析 JSON</button>
+      <button class="btn btn-primary hidden" id="export-analysis-figure-btn">导出整体分析图</button>
     </div>
   </section>
 
@@ -460,9 +466,9 @@
           </select>
         </label>
         <button class="btn btn-secondary" id="gaze-playback-btn" disabled>模拟回放</button>
-        <button class="btn btn-primary" id="export-viz-layer-btn">导出透明图层</button>
-        <button class="btn btn-primary" id="export-academic-figure-btn">导出学术图片</button>
-        <button class="btn btn-primary" id="export-academic-batch-btn">批量导出学术图片</button>
+        <button class="btn btn-primary hidden" id="export-viz-layer-btn">导出透明图层</button>
+        <button class="btn btn-primary hidden" id="export-academic-figure-btn">导出学术图片</button>
+        <button class="btn btn-primary hidden" id="export-academic-batch-btn">批量导出学术图片</button>
       </div>
     </div>
     <div class="manual-correction-panel hidden" id="manual-correction-panel">
@@ -504,21 +510,24 @@
     <button class="btn btn-ghost" id="import-archive-folder-btn">
       导入 data523 文件夹
     </button>
-    <button class="btn btn-ghost" id="export-selected-data-btn">
+    <button class="btn btn-ghost hidden" id="export-selected-data-btn">
       导出单次数据
     </button>
-    <button class="btn btn-ghost" id="export-data-btn">
+    <button class="btn btn-ghost hidden" id="export-data-btn">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
         <path d="M8 2v8M5 7l3 3 3-3M3 13h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       导出全部数据
     </button>
-    <button class="btn btn-ghost" id="export-pdf-btn">
+    <button class="btn btn-ghost hidden" id="export-pdf-btn">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
         <path d="M4 2h6l3 3v9H4V2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
         <path d="M9 2v3h3M6 8h4M6 11h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
       导出 PDF
+    </button>
+    <button class="btn btn-primary" id="export-participant-folder-btn">
+      导出当前参与者文件夹
     </button>
   </div>
 </div>

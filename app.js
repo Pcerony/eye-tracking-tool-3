@@ -51,6 +51,19 @@ const I18N_TEXT = {
     '请输入参与者姓名': 'Enter participant name',
     '分析报告': 'Analysis Report',
     '导出存档': 'Export Archive',
+    '更新全部存档文件夹': 'Update All Archive Folder',
+    '导出当前参与者文件夹': 'Export Current Participant Folder',
+    '删除当前参与者': 'Delete Current Participant',
+    '删除当前记录': 'Delete Current Record',
+    '删除': 'Delete',
+    '确认删除当前参与者及其全部记录？此操作无法撤销。': 'Delete the current participant and all of their records? This cannot be undone.',
+    '确认删除当前记录？此操作无法撤销。': 'Delete the current record? This cannot be undone.',
+    '当前浏览器不支持文件夹增量导出，请使用最新版 Chrome 或 Edge。': 'This browser does not support incremental folder export. Use the latest Chrome or Edge.',
+    '请选择一个用于保存 SIGN Visual Attention 存档的文件夹。': 'Choose a folder for the SIGN Visual Attention archive.',
+    '没有可导出的当前参与者。': 'There is no current participant to export.',
+    '文件夹导出完成。': 'Folder export complete.',
+    '文件夹导出已取消。': 'Folder export was cancelled.',
+    '正在导出…': 'Exporting...',
     '单个数据分析': 'Single-Run Analysis',
     '整体数据分析': 'Overall Analysis',
     '参与者': 'Participants',
@@ -321,6 +334,19 @@ const I18N_TEXT = {
     '请输入参与者姓名': '参加者名を入力',
     '分析报告': '分析レポート',
     '导出存档': 'アーカイブを書き出し',
+    '更新全部存档文件夹': '全アーカイブフォルダを更新',
+    '导出当前参与者文件夹': '現在の参加者フォルダを書き出し',
+    '删除当前参与者': '現在の参加者を削除',
+    '删除当前记录': '現在の記録を削除',
+    '删除': '削除',
+    '确认删除当前参与者及其全部记录？此操作无法撤销。': '現在の参加者とすべての記録を削除しますか？この操作は元に戻せません。',
+    '确认删除当前记录？此操作无法撤销。': '現在の記録を削除しますか？この操作は元に戻せません。',
+    '当前浏览器不支持文件夹增量导出，请使用最新版 Chrome 或 Edge。': 'このブラウザはフォルダの増分書き出しに対応していません。最新版の Chrome または Edge を使用してください。',
+    '请选择一个用于保存 SIGN Visual Attention 存档的文件夹。': 'SIGN Visual Attention アーカイブを保存するフォルダを選択してください。',
+    '没有可导出的当前参与者。': '書き出し可能な現在の参加者がありません。',
+    '文件夹导出完成。': 'フォルダの書き出しが完了しました。',
+    '文件夹导出已取消。': 'フォルダの書き出しをキャンセルしました。',
+    '正在导出…': '書き出し中...',
     '单个数据分析': '単一データ分析',
     '整体数据分析': '全体データ分析',
     '参与者': '参加者',
@@ -793,6 +819,8 @@ const State = {
   manualCorrection: null,
   manualCorrectionRunKey: '',
   academicBatchRecords: [],
+  exportRootDirectoryHandle: null,
+  folderExportInProgress: false,
 };
 
 // ─── DOM ────────────────────────────────────────────────────────
@@ -876,8 +904,10 @@ const EL = {
   reportCanvas:  $('report-canvas'),
   participantCount: $('participant-count'),
   participantList:  $('participant-list'),
+  deleteParticipantBtn: $('delete-participant-btn'),
   runCount:         $('run-count'),
   runList:          $('run-list'),
+  deleteRunBtn:     $('delete-run-btn'),
   selectedRunLabel: $('selected-run-label'),
   selectedRunNote:  $('selected-run-note'),
   tabHeatmap:    $('tab-heatmap'),
@@ -923,6 +953,7 @@ const EL = {
   importArchiveFolderBtn: $('import-archive-folder-btn'),
   importArchiveFolderInput: $('import-archive-folder-input'),
   exportArchiveBtn:   $('export-archive-btn'),
+  exportParticipantFolderBtn: $('export-participant-folder-btn'),
   exportSelectedDataBtn: $('export-selected-data-btn'),
   exportDataBtn: $('export-data-btn'),
   exportPdfBtn:  $('export-pdf-btn'),
@@ -1068,6 +1099,53 @@ function selectRun(sessionId, runId) {
   updateHomeDataSummary();
 }
 
+function applyCurrentDataSelection(session, run = session?.runs?.[0] || null) {
+  State.selectedSessionId = session?.id || null;
+  State.currentReportRun = run || null;
+  State.gazeHistory = run?.points || [];
+  State.uploadedImageSrc = run?.imageSrc || null;
+  State.manualCorrection = null;
+  State.manualCorrectionRunKey = '';
+  State.lastReportRunId = null;
+}
+
+function refreshDataWorkbenchAfterMutation() {
+  State.archiveDirty = true;
+  State.archiveUnloadPrompted = false;
+  renderDataWorkbench();
+  updateReportFromCurrentRun();
+  updateAnalysisDashboard();
+  updateHomeDataSummary();
+}
+
+function deleteCurrentParticipant() {
+  const sessionIndex = State.calibrationSessions.findIndex(session => session.id === State.selectedSessionId);
+  if (sessionIndex < 0) return;
+  if (!window.confirm(localizeText('确认删除当前参与者及其全部记录？此操作无法撤销。'))) return;
+
+  const [removed] = State.calibrationSessions.splice(sessionIndex, 1);
+  if (State.calibrationSession?.id === removed.id) {
+    State.calibrationSession = null;
+    State.calibrationDone = false;
+  }
+  const nextSession = State.calibrationSessions[Math.min(sessionIndex, State.calibrationSessions.length - 1)] || null;
+  applyCurrentDataSelection(nextSession);
+  refreshDataWorkbenchAfterMutation();
+}
+
+function deleteCurrentRun() {
+  const session = State.calibrationSessions.find(item => item.id === State.selectedSessionId);
+  if (!session || !State.currentReportRun) return;
+  const runIndex = session.runs.findIndex(run => run === State.currentReportRun || run.id === State.currentReportRun.id);
+  if (runIndex < 0) return;
+  if (!window.confirm(localizeText('确认删除当前记录？此操作无法撤销。'))) return;
+
+  session.runs.splice(runIndex, 1);
+  const nextRun = session.runs[Math.min(runIndex, session.runs.length - 1)] || null;
+  applyCurrentDataSelection(session, nextRun);
+  refreshDataWorkbenchAfterMutation();
+}
+
 function showDataScreen(run = State.currentReportRun) {
   setReportMode('single');
   if (run) {
@@ -1110,6 +1188,8 @@ function renderDataWorkbench() {
   EL.runList.innerHTML = '';
 
   if (!State.calibrationSessions.length) {
+    if (EL.deleteParticipantBtn) EL.deleteParticipantBtn.disabled = true;
+    if (EL.deleteRunBtn) EL.deleteRunBtn.disabled = true;
     EL.participantList.innerHTML = '<p class="data-empty">还没有参与者数据。可先完成追踪，或导入参与者存档。</p>';
     EL.runList.innerHTML = '<p class="data-empty">请选择参与者。</p>';
     EL.runCount.textContent = '0';
@@ -1133,15 +1213,19 @@ function renderDataWorkbench() {
 
   const session = State.calibrationSessions.find(item => item.id === State.selectedSessionId) || State.calibrationSessions[0];
   State.selectedSessionId = session.id;
+  if (EL.deleteParticipantBtn) EL.deleteParticipantBtn.disabled = false;
   EL.runCount.textContent = session.runs.length;
 
   if (!session.runs.length) {
+    if (EL.deleteRunBtn) EL.deleteRunBtn.disabled = true;
     EL.runList.innerHTML = '<p class="data-empty">该参与者还没有完成任何图片追踪。</p>';
     EL.selectedRunLabel.textContent = session.label;
     EL.selectedRunNote.textContent = '完成一次图片追踪后，记录会出现在这里。';
     updateAnalysisDashboard();
     return;
   }
+
+  if (EL.deleteRunBtn) EL.deleteRunBtn.disabled = !State.currentReportRun;
 
   session.runs.forEach((run, index) => {
     const item = document.createElement('button');
@@ -3765,6 +3849,313 @@ function downloadCanvasPng(filename, canvas) {
   }, 'image/png');
 }
 
+const EXPORT_HANDLE_DB = 'sign-visual-attention-export';
+const EXPORT_HANDLE_STORE = 'handles';
+const EXPORT_HANDLE_KEY = 'archive-root';
+const EXPORT_ROOT_FOLDER = 'SIGN Visual Attention Archive';
+
+function openExportHandleDatabase() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(EXPORT_HANDLE_DB, 1);
+    request.onupgradeneeded = () => {
+      if (!request.result.objectStoreNames.contains(EXPORT_HANDLE_STORE)) {
+        request.result.createObjectStore(EXPORT_HANDLE_STORE);
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function loadStoredExportDirectoryHandle() {
+  try {
+    const db = await openExportHandleDatabase();
+    return await new Promise((resolve, reject) => {
+      const transaction = db.transaction(EXPORT_HANDLE_STORE, 'readonly');
+      const request = transaction.objectStore(EXPORT_HANDLE_STORE).get(EXPORT_HANDLE_KEY);
+      request.onsuccess = () => resolve(request.result || null);
+      request.onerror = () => reject(request.error);
+    });
+  } catch (_) {
+    return null;
+  }
+}
+
+async function storeExportDirectoryHandle(handle) {
+  try {
+    const db = await openExportHandleDatabase();
+    await new Promise((resolve, reject) => {
+      const transaction = db.transaction(EXPORT_HANDLE_STORE, 'readwrite');
+      transaction.objectStore(EXPORT_HANDLE_STORE).put(handle, EXPORT_HANDLE_KEY);
+      transaction.oncomplete = resolve;
+      transaction.onerror = () => reject(transaction.error);
+    });
+  } catch (_) {}
+}
+
+async function restoreExportDirectoryHandle() {
+  if (!('indexedDB' in window)) return;
+  State.exportRootDirectoryHandle = await loadStoredExportDirectoryHandle();
+}
+
+async function hasDirectoryWritePermission(handle, request = false) {
+  if (!handle) return false;
+  const options = { mode: 'readwrite' };
+  if (await handle.queryPermission(options) === 'granted') return true;
+  return request && await handle.requestPermission(options) === 'granted';
+}
+
+async function getExportRootDirectoryHandle() {
+  if (!window.showDirectoryPicker) {
+    throw new Error(localizeText('当前浏览器不支持文件夹增量导出，请使用最新版 Chrome 或 Edge。'));
+  }
+  if (State.exportRootDirectoryHandle && await hasDirectoryWritePermission(State.exportRootDirectoryHandle, true)) {
+    return State.exportRootDirectoryHandle;
+  }
+
+  const selected = await window.showDirectoryPicker({
+    id: 'sign-visual-attention-archive',
+    mode: 'readwrite',
+  });
+  const root = await selected.getDirectoryHandle(EXPORT_ROOT_FOLDER, { create: true });
+  State.exportRootDirectoryHandle = root;
+  await storeExportDirectoryHandle(root);
+  return root;
+}
+
+async function writeDirectoryFile(directory, name, content, type = 'application/octet-stream') {
+  const fileHandle = await directory.getFileHandle(name, { create: true });
+  const writable = await fileHandle.createWritable();
+  const payload = content instanceof Blob ? content : new Blob([content], { type });
+  await writable.write(payload);
+  await writable.close();
+}
+
+async function removeDirectoryEntriesExcept(directory, expectedNames) {
+  if (!directory?.entries || !directory?.removeEntry) return;
+  for await (const [name, handle] of directory.entries()) {
+    if (!expectedNames.has(name)) {
+      await directory.removeEntry(name, { recursive: handle.kind === 'directory' });
+    }
+  }
+}
+
+function canvasToPngBlob(canvas) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(blob => {
+      if (blob) resolve(blob);
+      else reject(new Error('Unable to create PNG image.'));
+    }, 'image/png');
+  });
+}
+
+async function sourceImageToBlob(source) {
+  if (!source) return null;
+  const response = await fetch(source);
+  if (!response.ok && !source.startsWith('data:') && !source.startsWith('blob:')) {
+    throw new Error(`Unable to read stimulus image: ${response.status}`);
+  }
+  return response.blob();
+}
+
+function imageExtensionForBlob(blob, source = '') {
+  const byType = {
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/webp': 'webp',
+    'image/gif': 'gif',
+  }[blob?.type];
+  if (byType) return byType;
+  const match = String(source).match(/\.([a-z0-9]{2,5})(?:[?#]|$)/i);
+  return match ? match[1].toLowerCase() : 'png';
+}
+
+function createArchivePayload(sessions = State.calibrationSessions) {
+  return {
+    schema: 'visual-analytics-eye-archive',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    calibrationSessionSeq: State.calibrationSessionSeq,
+    sessions,
+  };
+}
+
+function getParticipantFolderName(session) {
+  return `participant-${safeFileName(session.id || session.label || 'participant')}`;
+}
+
+function getRunFolderName(run, index) {
+  return `record-${String(index + 1).padStart(3, '0')}-${safeFileName(run.id || 'run')}`;
+}
+
+async function exportRunPackage(record, recordsDirectory, index) {
+  const { session, run } = record;
+  const runFolderName = getRunFolderName(run, index);
+  const runDirectory = await recordsDirectory.getDirectoryHandle(runFolderName, { create: true });
+  const expected = new Set(['raw-data.csv', 'raw-data.json', 'heatmap.png', 'gaze-sequence.png', 'academic-heatmap.png', 'academic-gaze-sequence.png', 'heatmap-overlay.png', 'gaze-sequence-overlay.png']);
+  const warnings = [];
+
+  await writeDirectoryFile(runDirectory, 'raw-data.csv', buildCsv([record]), 'text/csv;charset=utf-8');
+  await writeDirectoryFile(runDirectory, 'raw-data.json', JSON.stringify({ session: { ...session, runs: undefined }, run }, null, 2), 'application/json;charset=utf-8');
+
+  try {
+    const stimulus = await sourceImageToBlob(run.imageSrc);
+    if (stimulus) {
+      const stimulusName = `stimulus.${imageExtensionForBlob(stimulus, run.imageSrc)}`;
+      expected.add(stimulusName);
+      await writeDirectoryFile(runDirectory, stimulusName, stimulus);
+    }
+  } catch (err) {
+    warnings.push(err.message);
+  }
+
+  const data = Array.isArray(run.points) ? run.points : [];
+  const range = { start: 0, end: Math.max(0, Number(run.duration) || 0), duration: Math.max(0, Number(run.duration) || 0) };
+  const visualExports = [
+    ['heatmap.png', () => renderVisualizationCanvas('heatmap', run, data, { includeBackground: true, includeLegend: true, legendLabels: { low: 'Low', high: 'High', title: 'Attention Density' } })],
+    ['gaze-sequence.png', () => renderVisualizationCanvas('gazeplot', run, data, { includeBackground: true })],
+    ['academic-heatmap.png', () => renderAcademicFigureCanvas(run, data, { mode: 'heatmap', range })],
+    ['academic-gaze-sequence.png', () => renderAcademicFigureCanvas(run, data, { mode: 'gazeplot', range })],
+    ['heatmap-overlay.png', () => renderTransparentLayer('heatmap', run, data)],
+    ['gaze-sequence-overlay.png', () => renderTransparentLayer('gazeplot', run, data)],
+  ];
+  for (const [name, render] of visualExports) {
+    try {
+      await writeDirectoryFile(runDirectory, name, await canvasToPngBlob(await render()));
+    } catch (err) {
+      warnings.push(`${name}: ${err.message}`);
+    }
+  }
+
+  if (warnings.length) {
+    expected.add('export-warnings.txt');
+    await writeDirectoryFile(runDirectory, 'export-warnings.txt', warnings.join('\n'), 'text/plain;charset=utf-8');
+  }
+  await removeDirectoryEntriesExcept(runDirectory, expected);
+  return runFolderName;
+}
+
+async function exportParticipantPackage(session, participantsDirectory) {
+  const participantFolderName = getParticipantFolderName(session);
+  const participantDirectory = await participantsDirectory.getDirectoryHandle(participantFolderName, { create: true });
+  const recordsDirectory = await participantDirectory.getDirectoryHandle('records', { create: true });
+  const records = session.runs.map((run, index) => ({ session, run, trialIndex: index + 1 }));
+  const expectedRuns = new Set();
+
+  for (let index = 0; index < records.length; index += 1) {
+    expectedRuns.add(await exportRunPackage(records[index], recordsDirectory, index));
+  }
+  await removeDirectoryEntriesExcept(recordsDirectory, expectedRuns);
+
+  const manifest = {
+    schema: 'sign-visual-attention-participant-package',
+    version: 1,
+    participantId: session.id,
+    participantLabel: session.label,
+    exportedAt: new Date().toISOString(),
+    recordCount: records.length,
+    records: records.map((record, index) => ({
+      id: record.run.id,
+      image: record.run.image?.name || '',
+      duration: record.run.duration,
+      points: record.run.points?.length || 0,
+      folder: getRunFolderName(record.run, index),
+    })),
+  };
+  await writeDirectoryFile(participantDirectory, 'manifest.json', JSON.stringify(manifest, null, 2), 'application/json;charset=utf-8');
+  await writeDirectoryFile(participantDirectory, 'participant-archive.json', JSON.stringify(createArchivePayload([session]), null, 2), 'application/json;charset=utf-8');
+  await writeDirectoryFile(participantDirectory, 'all-records.csv', buildCsv(records), 'text/csv;charset=utf-8');
+  await removeDirectoryEntriesExcept(participantDirectory, new Set(['manifest.json', 'participant-archive.json', 'all-records.csv', 'records']));
+  return participantFolderName;
+}
+
+async function runFolderExport(button, task) {
+  if (State.folderExportInProgress) return;
+  State.folderExportInProgress = true;
+  const originalText = button?.textContent;
+  if (button) {
+    button.disabled = true;
+    button.textContent = localizeText('正在导出…');
+  }
+  try {
+    await task();
+    alert('文件夹导出完成。');
+  } catch (err) {
+    if (err?.name === 'AbortError') alert('文件夹导出已取消。');
+    else alert(`无法导出存档：${err.message}`);
+  } finally {
+    State.folderExportInProgress = false;
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
+  }
+}
+
+async function exportCurrentParticipantFolder() {
+  const session = State.calibrationSessions.find(item => item.id === State.selectedSessionId);
+  if (!session) {
+    alert('没有可导出的当前参与者。');
+    return;
+  }
+  await runFolderExport(EL.exportParticipantFolderBtn, async () => {
+    const root = await getExportRootDirectoryHandle();
+    const participants = await root.getDirectoryHandle('participants', { create: true });
+    const originalCorrectionMode = State.reportCorrectionMode;
+    State.reportCorrectionMode = 'raw';
+    try {
+      await exportParticipantPackage(session, participants);
+      await writeDirectoryFile(root, 'last-participant-export.json', JSON.stringify({
+        participantId: session.id,
+        participantLabel: session.label,
+        exportedAt: new Date().toISOString(),
+      }, null, 2), 'application/json;charset=utf-8');
+    } finally {
+      State.reportCorrectionMode = originalCorrectionMode;
+    }
+  });
+}
+
+async function exportAllArchiveFolder() {
+  if (!State.calibrationSessions.length) {
+    alert('暂无参与者存档可导出');
+    return;
+  }
+  await runFolderExport(EL.exportArchiveBtn, async () => {
+    const root = await getExportRootDirectoryHandle();
+    const participants = await root.getDirectoryHandle('participants', { create: true });
+    const expectedParticipants = new Set();
+    const originalCorrectionMode = State.reportCorrectionMode;
+    State.reportCorrectionMode = 'raw';
+    try {
+      for (const session of State.calibrationSessions) {
+        expectedParticipants.add(await exportParticipantPackage(session, participants));
+      }
+      await removeDirectoryEntriesExcept(participants, expectedParticipants);
+      await writeDirectoryFile(root, 'archive.json', JSON.stringify(createArchivePayload(), null, 2), 'application/json;charset=utf-8');
+      await writeDirectoryFile(root, 'all-records.csv', buildCsv(getAllTrackingRuns()), 'text/csv;charset=utf-8');
+      await writeDirectoryFile(root, 'manifest.json', JSON.stringify({
+        schema: 'sign-visual-attention-full-archive',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        participantCount: State.calibrationSessions.length,
+        recordCount: getAllTrackingRuns().length,
+        participants: State.calibrationSessions.map(session => ({
+          id: session.id,
+          label: session.label,
+          folder: getParticipantFolderName(session),
+          records: session.runs.length,
+        })),
+      }, null, 2), 'application/json;charset=utf-8');
+      await removeDirectoryEntriesExcept(root, new Set(['archive.json', 'all-records.csv', 'manifest.json', 'last-participant-export.json', 'participants']));
+      State.archiveDirty = false;
+      State.archiveUnloadPrompted = false;
+    } finally {
+      State.reportCorrectionMode = originalCorrectionMode;
+    }
+  });
+}
+
 function getCurrentVizMode() {
   return EL.tabHeatmap.classList.contains('active') ? 'heatmap' : 'gazeplot';
 }
@@ -4858,6 +5249,8 @@ function bindEvents() {
   EL.academicBatchStartBtn?.addEventListener('click', startSelectedAcademicBatchExport);
   EL.singleAnalysisTab.addEventListener('click', () => setReportMode('single'));
   EL.overallAnalysisTab.addEventListener('click', () => setReportMode('overall'));
+  EL.deleteParticipantBtn?.addEventListener('click', deleteCurrentParticipant);
+  EL.deleteRunBtn?.addEventListener('click', deleteCurrentRun);
   EL.analysisScopeSelect.addEventListener('change', updateAnalysisDashboard);
   EL.analysisImageSelect.addEventListener('change', updateAnalysisDashboard);
   EL.exportAnalysisCsvBtn.addEventListener('click', exportAnalysisCSV);
@@ -4876,7 +5269,8 @@ function bindEvents() {
   EL.importArchiveFolderBtn.addEventListener('click', () => EL.importArchiveFolderInput.click());
   EL.importArchiveInput.addEventListener('change', e => importArchiveFiles(e.target.files, e.target));
   EL.importArchiveFolderInput.addEventListener('change', e => importArchiveFolder(e.target.files));
-  EL.exportArchiveBtn.addEventListener('click', exportArchive);
+  EL.exportArchiveBtn.addEventListener('click', exportAllArchiveFolder);
+  EL.exportParticipantFolderBtn?.addEventListener('click', exportCurrentParticipantFolder);
   EL.exportSelectedDataBtn.addEventListener('click', exportSelectedCSV);
   EL.exportDataBtn.addEventListener('click', exportCSV);
   EL.exportPdfBtn.addEventListener('click',  () => window.print());
@@ -4903,6 +5297,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeBuiltinImages();
   updateHomeDataSummary();
   updateAnalysisDashboard();
+  restoreExportDirectoryHandle();
 
   bindEvents();
   applyLanguage(State.language);
