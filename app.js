@@ -819,6 +819,7 @@ const State = {
   manualCorrection: null,
   manualCorrectionRunKey: '',
   academicBatchRecords: [],
+  exportParentDirectoryHandle: null,
   exportRootDirectoryHandle: null,
   folderExportInProgress: false,
 };
@@ -3851,7 +3852,8 @@ function downloadCanvasPng(filename, canvas) {
 
 const EXPORT_HANDLE_DB = 'sign-visual-attention-export';
 const EXPORT_HANDLE_STORE = 'handles';
-const EXPORT_HANDLE_KEY = 'archive-root';
+const EXPORT_HANDLE_KEY = 'archive-parent';
+const EXPORT_LEGACY_ROOT_HANDLE_KEY = 'archive-root';
 const EXPORT_ROOT_FOLDER = 'SIGN Visual Attention Archive';
 
 function openExportHandleDatabase() {
@@ -3867,12 +3869,12 @@ function openExportHandleDatabase() {
   });
 }
 
-async function loadStoredExportDirectoryHandle() {
+async function loadStoredExportDirectoryHandle(key = EXPORT_HANDLE_KEY) {
   try {
     const db = await openExportHandleDatabase();
     return await new Promise((resolve, reject) => {
       const transaction = db.transaction(EXPORT_HANDLE_STORE, 'readonly');
-      const request = transaction.objectStore(EXPORT_HANDLE_STORE).get(EXPORT_HANDLE_KEY);
+      const request = transaction.objectStore(EXPORT_HANDLE_STORE).get(key);
       request.onsuccess = () => resolve(request.result || null);
       request.onerror = () => reject(request.error);
     });
@@ -3881,12 +3883,14 @@ async function loadStoredExportDirectoryHandle() {
   }
 }
 
-async function storeExportDirectoryHandle(handle) {
+async function storeExportDirectoryHandle(handle, key = EXPORT_HANDLE_KEY) {
   try {
     const db = await openExportHandleDatabase();
     await new Promise((resolve, reject) => {
       const transaction = db.transaction(EXPORT_HANDLE_STORE, 'readwrite');
-      transaction.objectStore(EXPORT_HANDLE_STORE).put(handle, EXPORT_HANDLE_KEY);
+      const store = transaction.objectStore(EXPORT_HANDLE_STORE);
+      if (handle) store.put(handle, key);
+      else store.delete(key);
       transaction.oncomplete = resolve;
       transaction.onerror = () => reject(transaction.error);
     });
@@ -3895,7 +3899,10 @@ async function storeExportDirectoryHandle(handle) {
 
 async function restoreExportDirectoryHandle() {
   if (!('indexedDB' in window)) return;
-  State.exportRootDirectoryHandle = await loadStoredExportDirectoryHandle();
+  State.exportParentDirectoryHandle = await loadStoredExportDirectoryHandle(EXPORT_HANDLE_KEY);
+  State.exportRootDirectoryHandle = State.exportParentDirectoryHandle
+    ? null
+    : await loadStoredExportDirectoryHandle(EXPORT_LEGACY_ROOT_HANDLE_KEY);
 }
 
 async function hasDirectoryWritePermission(handle, request = false) {
@@ -3905,11 +3912,31 @@ async function hasDirectoryWritePermission(handle, request = false) {
   return request && await handle.requestPermission(options) === 'granted';
 }
 
-async function getExportRootDirectoryHandle() {
+async function clearStoredExportDirectoryHandles() {
+  State.exportParentDirectoryHandle = null;
+  State.exportRootDirectoryHandle = null;
+  await storeExportDirectoryHandle(null, EXPORT_HANDLE_KEY);
+  await storeExportDirectoryHandle(null, EXPORT_LEGACY_ROOT_HANDLE_KEY);
+}
+
+async function resolveExportRootFromParent(parentHandle) {
+  return parentHandle.getDirectoryHandle(EXPORT_ROOT_FOLDER, { create: true });
+}
+
+async function getExportRootDirectoryHandle({ forcePicker = false } = {}) {
   if (!window.showDirectoryPicker) {
     throw new Error(localizeText('当前浏览器不支持文件夹增量导出，请使用最新版 Chrome 或 Edge。'));
   }
-  if (State.exportRootDirectoryHandle && await hasDirectoryWritePermission(State.exportRootDirectoryHandle, true)) {
+  if (!forcePicker && State.exportParentDirectoryHandle && await hasDirectoryWritePermission(State.exportParentDirectoryHandle, true)) {
+    try {
+      State.exportRootDirectoryHandle = await resolveExportRootFromParent(State.exportParentDirectoryHandle);
+      return State.exportRootDirectoryHandle;
+    } catch (err) {
+      await clearStoredExportDirectoryHandles();
+      if (!isRecoverableDirectoryExportError(err)) throw err;
+    }
+  }
+  if (!forcePicker && State.exportRootDirectoryHandle && await hasDirectoryWritePermission(State.exportRootDirectoryHandle, true)) {
     return State.exportRootDirectoryHandle;
   }
 
@@ -3917,10 +3944,20 @@ async function getExportRootDirectoryHandle() {
     id: 'sign-visual-attention-archive',
     mode: 'readwrite',
   });
-  const root = await selected.getDirectoryHandle(EXPORT_ROOT_FOLDER, { create: true });
+  const root = await resolveExportRootFromParent(selected);
+  State.exportParentDirectoryHandle = selected;
   State.exportRootDirectoryHandle = root;
-  await storeExportDirectoryHandle(root);
+  await storeExportDirectoryHandle(selected, EXPORT_HANDLE_KEY);
+  await storeExportDirectoryHandle(null, EXPORT_LEGACY_ROOT_HANDLE_KEY);
   return root;
+}
+
+function isRecoverableDirectoryExportError(err) {
+  const message = String(err?.message || '');
+  return err?.name === 'NotFoundError'
+    || err?.name === 'InvalidModificationError'
+    || err?.name === 'NotAllowedError'
+    || /could not be found|name is not allowed|not allowed|permission|directory handle/i.test(message);
 }
 
 async function writeDirectoryFile(directory, name, content, type = 'application/octet-stream') {
@@ -3980,8 +4017,60 @@ function createArchivePayload(sessions = State.calibrationSessions) {
   };
 }
 
-function getParticipantFolderName(session) {
-  return `participant-${safeFileName(session.id || session.label || 'participant')}`;
+function formatExportTimestamp(date = new Date()) {
+  const pad = value => String(value).padStart(2, '0');
+  return [
+    date.getFullYear(),
+    pad(date.getMonth() + 1),
+    pad(date.getDate()),
+  ].join('') + '-' + [pad(date.getHours()), pad(date.getMinutes()), pad(date.getSeconds())].join('');
+}
+
+function getParticipantFolderBaseName(session) {
+  return safeFileName(session?.label || session?.id || 'participant');
+}
+
+async function directoryEntryExists(directory, name) {
+  try {
+    await directory.getDirectoryHandle(name, { create: false });
+    return true;
+  } catch (err) {
+    if (err?.name === 'NotFoundError') return false;
+    if (err?.name === 'TypeMismatchError') return true;
+    throw err;
+  }
+}
+
+async function createUniqueDirectory(directory, baseName, usedNames = new Set()) {
+  const safeBase = safeFileName(baseName || 'export');
+  let suffix = 1;
+  while (suffix < 10000) {
+    const suffixText = suffix === 1 ? '' : `-${suffix}`;
+    const baseLimit = Math.max(1, 60 - suffixText.length);
+    const name = safeFileName(`${safeBase.slice(0, baseLimit)}${suffixText}`);
+    if (!usedNames.has(name) && !await directoryEntryExists(directory, name)) {
+      usedNames.add(name);
+      return {
+        name,
+        handle: await directory.getDirectoryHandle(name, { create: true }),
+      };
+    }
+    suffix += 1;
+  }
+  throw new Error(localizeText('无法创建唯一的导出文件夹名，请更换导出目录后重试。'));
+}
+
+function createFolderExportContext() {
+  const exportedAt = new Date();
+  return {
+    exportedAt,
+    timestamp: formatExportTimestamp(exportedAt),
+    usedParticipantFolders: new Set(),
+  };
+}
+
+function getParticipantFolderName(session, context = createFolderExportContext()) {
+  return `${getParticipantFolderBaseName(session)}_${context.timestamp}`;
 }
 
 function getRunFolderName(run, index) {
@@ -4035,9 +4124,15 @@ async function exportRunPackage(record, recordsDirectory, index) {
   return runFolderName;
 }
 
-async function exportParticipantPackage(session, participantsDirectory) {
-  const participantFolderName = getParticipantFolderName(session);
-  const participantDirectory = await participantsDirectory.getDirectoryHandle(participantFolderName, { create: true });
+async function exportParticipantPackage(session, participantsDirectory, exportContext = createFolderExportContext()) {
+  const participantFolderBase = getParticipantFolderName(session, exportContext);
+  const participantFolder = await createUniqueDirectory(
+    participantsDirectory,
+    participantFolderBase,
+    exportContext.usedParticipantFolders,
+  );
+  const participantFolderName = participantFolder.name;
+  const participantDirectory = participantFolder.handle;
   const recordsDirectory = await participantDirectory.getDirectoryHandle('records', { create: true });
   const records = session.runs.map((run, index) => ({ session, run, trialIndex: index + 1 }));
   const expectedRuns = new Set();
@@ -4078,11 +4173,23 @@ async function runFolderExport(button, task) {
     button.textContent = localizeText('正在导出…');
   }
   try {
-    await task();
+    await task({ forcePicker: false });
     alert('文件夹导出完成。');
   } catch (err) {
-    if (err?.name === 'AbortError') alert('文件夹导出已取消。');
-    else alert(`无法导出存档：${err.message}`);
+    if (err?.name === 'AbortError') {
+      alert('文件夹导出已取消。');
+    } else if (isRecoverableDirectoryExportError(err)) {
+      try {
+        await clearStoredExportDirectoryHandles();
+        await task({ forcePicker: true });
+        alert('文件夹导出完成。');
+      } catch (retryErr) {
+        if (retryErr?.name === 'AbortError') alert('文件夹导出已取消。');
+        else alert(`无法导出存档：${retryErr.message}`);
+      }
+    } else {
+      alert(`无法导出存档：${err.message}`);
+    }
   } finally {
     State.folderExportInProgress = false;
     if (button) {
@@ -4098,18 +4205,22 @@ async function exportCurrentParticipantFolder() {
     alert('没有可导出的当前参与者。');
     return;
   }
-  await runFolderExport(EL.exportParticipantFolderBtn, async () => {
-    const root = await getExportRootDirectoryHandle();
+  await runFolderExport(EL.exportParticipantFolderBtn, async ({ forcePicker = false } = {}) => {
+    const root = await getExportRootDirectoryHandle({ forcePicker });
     const participants = await root.getDirectoryHandle('participants', { create: true });
     const originalCorrectionMode = State.reportCorrectionMode;
+    const exportContext = createFolderExportContext();
     State.reportCorrectionMode = 'raw';
     try {
-      await exportParticipantPackage(session, participants);
-      await writeDirectoryFile(root, 'last-participant-export.json', JSON.stringify({
+      const folder = await exportParticipantPackage(session, participants, exportContext);
+      const lastParticipantExport = JSON.stringify({
         participantId: session.id,
         participantLabel: session.label,
-        exportedAt: new Date().toISOString(),
-      }, null, 2), 'application/json;charset=utf-8');
+        exportedAt: exportContext.exportedAt.toISOString(),
+        folder,
+      }, null, 2);
+      await writeDirectoryFile(root, 'last-participant-export.json', lastParticipantExport, 'application/json;charset=utf-8');
+      await writeDirectoryFile(root, `last-participant-export_${exportContext.timestamp}.json`, lastParticipantExport, 'application/json;charset=utf-8');
     } finally {
       State.reportCorrectionMode = originalCorrectionMode;
     }
@@ -4121,33 +4232,41 @@ async function exportAllArchiveFolder() {
     alert('暂无参与者存档可导出');
     return;
   }
-  await runFolderExport(EL.exportArchiveBtn, async () => {
-    const root = await getExportRootDirectoryHandle();
+  await runFolderExport(EL.exportArchiveBtn, async ({ forcePicker = false } = {}) => {
+    const root = await getExportRootDirectoryHandle({ forcePicker });
     const participants = await root.getDirectoryHandle('participants', { create: true });
-    const expectedParticipants = new Set();
+    const exportedParticipants = [];
+    const exportContext = createFolderExportContext();
     const originalCorrectionMode = State.reportCorrectionMode;
     State.reportCorrectionMode = 'raw';
     try {
       for (const session of State.calibrationSessions) {
-        expectedParticipants.add(await exportParticipantPackage(session, participants));
+        exportedParticipants.push({
+          session,
+          folder: await exportParticipantPackage(session, participants, exportContext),
+        });
       }
-      await removeDirectoryEntriesExcept(participants, expectedParticipants);
-      await writeDirectoryFile(root, 'archive.json', JSON.stringify(createArchivePayload(), null, 2), 'application/json;charset=utf-8');
-      await writeDirectoryFile(root, 'all-records.csv', buildCsv(getAllTrackingRuns()), 'text/csv;charset=utf-8');
-      await writeDirectoryFile(root, 'manifest.json', JSON.stringify({
+      const archivePayload = JSON.stringify(createArchivePayload(), null, 2);
+      const allRecordsCsv = buildCsv(getAllTrackingRuns());
+      const manifestPayload = JSON.stringify({
         schema: 'sign-visual-attention-full-archive',
         version: 1,
-        exportedAt: new Date().toISOString(),
+        exportedAt: exportContext.exportedAt.toISOString(),
         participantCount: State.calibrationSessions.length,
         recordCount: getAllTrackingRuns().length,
-        participants: State.calibrationSessions.map(session => ({
+        participants: exportedParticipants.map(({ session, folder }) => ({
           id: session.id,
           label: session.label,
-          folder: getParticipantFolderName(session),
+          folder,
           records: session.runs.length,
         })),
-      }, null, 2), 'application/json;charset=utf-8');
-      await removeDirectoryEntriesExcept(root, new Set(['archive.json', 'all-records.csv', 'manifest.json', 'last-participant-export.json', 'participants']));
+      }, null, 2);
+      await writeDirectoryFile(root, 'archive.json', archivePayload, 'application/json;charset=utf-8');
+      await writeDirectoryFile(root, `archive_${exportContext.timestamp}.json`, archivePayload, 'application/json;charset=utf-8');
+      await writeDirectoryFile(root, 'all-records.csv', allRecordsCsv, 'text/csv;charset=utf-8');
+      await writeDirectoryFile(root, `all-records_${exportContext.timestamp}.csv`, allRecordsCsv, 'text/csv;charset=utf-8');
+      await writeDirectoryFile(root, 'manifest.json', manifestPayload, 'application/json;charset=utf-8');
+      await writeDirectoryFile(root, `manifest_${exportContext.timestamp}.json`, manifestPayload, 'application/json;charset=utf-8');
       State.archiveDirty = false;
       State.archiveUnloadPrompted = false;
     } finally {
@@ -4896,7 +5015,7 @@ function exportSelectedCSV() {
   if (!record) { alert('请先选择一次追踪记录。'); return; }
 
   downloadBlob(
-    `eye_tracking_${record.session.id}_${record.run.id}_${safeFileName(record.run.image.name)}.csv`,
+    `eye_tracking_${safeFileName(record.session.id)}_${safeFileName(record.run.id)}_${safeFileName(record.run.image.name)}.csv`,
     buildCsv([record]),
     'text/csv;charset=utf-8;'
   );
@@ -4924,9 +5043,7 @@ function exportArchive() {
 
 function getArchiveFilename(date = new Date()) {
   const participantName = getArchiveParticipantName();
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${safeFileName(participantName)}-${hours}.${minutes}-sign visual attention.json`;
+  return `${safeFileName(participantName)}-${formatExportTimestamp(date)}-sign-visual-attention.json`;
 }
 
 function getArchiveParticipantName() {
@@ -5105,7 +5222,20 @@ function normalizePaperSize(size) {
 }
 
 function safeFileName(value) {
-  return String(value || 'trial').replace(/[\\/:*?"<>|]/g, '_').slice(0, 60);
+  let name = String(value || 'trial')
+    .normalize('NFKC')
+    .replace(/[\u0000-\u001f\u007f]/g, '')
+    .replace(/[\\/:*?"<>|]/g, '_')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/^\.+/g, '_')
+    .replace(/[. ]+$/g, '')
+    .replace(/_+/g, '_')
+    .slice(0, 60)
+    .trim()
+    .replace(/[. ]+$/g, '');
+  if (/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i.test(name)) name = `${name}_`;
+  return name || 'trial';
 }
 
 function shouldPromptBeforeUnload() {
