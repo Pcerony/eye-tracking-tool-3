@@ -482,6 +482,46 @@
       "id": "entropy-chart-sge",
       "path": "src/assets/images/entropy-chart-sge.png",
       "access": "public"
+    },
+    {
+      "id": "entropy-fig-01-paradigm",
+      "path": "src/assets/images/entropy-fig-01-paradigm.jpg",
+      "access": "public"
+    },
+    {
+      "id": "entropy-fig-02-metrics-flaw",
+      "path": "src/assets/images/entropy-fig-02-metrics-flaw.jpg",
+      "access": "public"
+    },
+    {
+      "id": "entropy-fig-03-friction",
+      "path": "src/assets/images/entropy-fig-03-friction.jpg",
+      "access": "public"
+    },
+    {
+      "id": "entropy-fig-04-surprisal",
+      "path": "src/assets/images/entropy-fig-04-surprisal.jpg",
+      "access": "public"
+    },
+    {
+      "id": "entropy-fig-05-aoi-weights",
+      "path": "src/assets/images/entropy-fig-05-aoi-weights.jpg",
+      "access": "public"
+    },
+    {
+      "id": "entropy-fig-06-egain-walkthrough",
+      "path": "src/assets/images/entropy-fig-06-egain-walkthrough.jpg",
+      "access": "public"
+    },
+    {
+      "id": "entropy-fig-07-markov-flow",
+      "path": "src/assets/images/entropy-fig-07-markov-flow.jpg",
+      "access": "public"
+    },
+    {
+      "id": "entropy-fig-08-eta-efficiency",
+      "path": "src/assets/images/entropy-fig-08-eta-efficiency.jpg",
+      "access": "public"
     }
   ],
   "crossPageComponents": [
@@ -764,7 +804,9 @@
       "chapterId": "deep-analysis",
       "layout": "data",
       "content": "src/content/slides/s18a-entropy-intro.json",
-      "assets": [],
+      "assets": [
+        "entropy-fig-01-paradigm"
+      ],
       "claims": []
     },
     {
@@ -772,7 +814,9 @@
       "chapterId": "deep-analysis",
       "layout": "data",
       "content": "src/content/slides/s18b-conventional-metrics.json",
-      "assets": [],
+      "assets": [
+        "entropy-fig-02-metrics-flaw"
+      ],
       "claims": []
     },
     {
@@ -780,7 +824,9 @@
       "chapterId": "deep-analysis",
       "layout": "data",
       "content": "src/content/slides/s18c-cognitive-friction.json",
-      "assets": [],
+      "assets": [
+        "entropy-fig-03-friction"
+      ],
       "claims": []
     },
     {
@@ -788,7 +834,9 @@
       "chapterId": "deep-analysis",
       "layout": "data",
       "content": "src/content/slides/s18d-surprisal-theory.json",
-      "assets": [],
+      "assets": [
+        "entropy-fig-04-surprisal"
+      ],
       "claims": []
     },
     {
@@ -796,7 +844,9 @@
       "chapterId": "deep-analysis",
       "layout": "data",
       "content": "src/content/slides/s18e-case-information-weight.json",
-      "assets": [],
+      "assets": [
+        "entropy-fig-05-aoi-weights"
+      ],
       "claims": []
     },
     {
@@ -804,7 +854,9 @@
       "chapterId": "deep-analysis",
       "layout": "data",
       "content": "src/content/slides/s18f-cognitive-gain-formula.json",
-      "assets": [],
+      "assets": [
+        "entropy-fig-06-egain-walkthrough"
+      ],
       "claims": []
     },
     {
@@ -813,7 +865,7 @@
       "layout": "data",
       "content": "src/content/slides/s18g-markov-stagnation.json",
       "assets": [
-        "entropy-markov-chart"
+        "entropy-fig-07-markov-flow"
       ],
       "claims": []
     },
@@ -822,7 +874,9 @@
       "chapterId": "deep-analysis",
       "layout": "data",
       "content": "src/content/slides/s18h-efficiency-ratio.json",
-      "assets": [],
+      "assets": [
+        "entropy-fig-08-eta-efficiency"
+      ],
       "claims": []
     },
     {
