@@ -1,0 +1,36 @@
+<h2>第 8 页图片轮播：选择操作方式</h2>
+<p class="subtitle">四张图片将收纳为一个主图区域，请选择更适合演示时操作的控件。</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:18px;background:#f4f6f3;">
+      <div style="height:180px;background:#fff;border:1px solid #ccd3cc;position:relative;display:flex;align-items:center;justify-content:center;color:#13704a;font-weight:700;">
+        <button class="mock-button" style="position:absolute;left:10px;width:34px;padding:8px;">‹</button>
+        单张大图
+        <button class="mock-button" style="position:absolute;right:10px;width:34px;padding:8px;">›</button>
+        <div style="position:absolute;bottom:9px;display:flex;gap:7px;"><i style="width:18px;height:5px;background:#13704a;"></i><i style="width:5px;height:5px;background:#b8c0ba;"></i><i style="width:5px;height:5px;background:#b8c0ba;"></i><i style="width:5px;height:5px;background:#b8c0ba;"></i></div>
+      </div>
+    </div>
+    <div class="card-body"><h3>A. 左右箭头 + 位置点</h3><p>推荐。主图最大，左右箭头直接切换，底部显示当前位置。</p></div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:18px;background:#f4f6f3;">
+      <div style="height:140px;background:#fff;border:1px solid #ccd3cc;display:flex;align-items:center;justify-content:center;color:#13704a;font-weight:700;">单张大图</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:7px;">
+        <span style="height:32px;background:#fff;border:2px solid #13704a;"></span><span style="height:32px;background:#dfe4e0;"></span><span style="height:32px;background:#dfe4e0;"></span><span style="height:32px;background:#dfe4e0;"></span>
+      </div>
+    </div>
+    <div class="card-body"><h3>B. 缩略图带</h3><p>可直接跳到任意图片，但会占用主图高度，页面更密。</p></div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:18px;background:#f4f6f3;">
+      <div style="height:180px;background:#fff;border:1px solid #ccd3cc;display:flex;align-items:center;justify-content:center;color:#13704a;font-weight:700;position:relative;">
+        点击主图切换
+        <span style="position:absolute;right:10px;bottom:8px;color:#5c635e;font-size:12px;">1 / 4</span>
+      </div>
+    </div>
+    <div class="card-body"><h3>C. 整图点击循环</h3><p>视觉最简洁，但可发现性较弱，观众不一定知道图片可点击。</p></div>
+  </div>
+</div>

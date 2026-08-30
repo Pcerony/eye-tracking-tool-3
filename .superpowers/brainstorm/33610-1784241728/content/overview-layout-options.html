@@ -1,0 +1,40 @@
+<h2>菜单缩略图布局</h2>
+<p class="subtitle">点击选择一个方向。三种方案都会直接预览完整幻灯片，并将菜单标题固定为 English + Japanese。
+</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:14px;background:#f3f3f0">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px">
+        <div style="grid-column:span 1"><div style="aspect-ratio:4/3;background:white;border:1px solid #bbb;padding:8px"><b style="font-size:8px">A Study on Co-creation</b><div style="height:70%;margin-top:6px;background:#202020"></div></div><b style="display:block;font-size:9px;margin-top:4px">01 Research Title</b><span style="font-size:8px;color:#666">研究タイトル</span></div>
+        <div><div style="aspect-ratio:4/3;background:white;border:1px solid #bbb;padding:8px"><div style="height:28%;background:#111"></div><div style="display:flex;gap:4px;height:55%;margin-top:5px"><i style="flex:1;background:#ddd"></i><i style="flex:1;background:#e22"></i></div></div><b style="display:block;font-size:9px;margin-top:4px">02 Research Context</b><span style="font-size:8px;color:#666">研究背景</span></div>
+        <div><div style="aspect-ratio:4/3;background:white;border:1px solid #bbb;padding:8px"><div style="height:18%;background:#e22"></div><div style="height:68%;margin-top:5px;background:linear-gradient(90deg,#ddd 48%,transparent 48%,transparent 52%,#222 52%)"></div></div><b style="display:block;font-size:9px;margin-top:4px">03 Current Problem</b><span style="font-size:8px;color:#666">現状の課題</span></div>
+        <div><div style="aspect-ratio:4/3;background:#171717;border:1px solid #333;padding:8px"><div style="height:22%;background:white"></div><div style="height:50%;margin-top:8px;border:2px solid #e22"></div></div><b style="display:block;font-size:9px;margin-top:4px">04 Research Gap</b><span style="font-size:8px;color:#666">研究ギャップ</span></div>
+      </div>
+    </div>
+    <div class="card-body"><h3>A. 4 列紧凑缩略图</h3><p>推荐。与现有 4 列结构一致，16 页可在一屏中高效扫描；标题置于画面下方。</p></div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:14px;background:#f3f3f0">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px">
+        <div><div style="aspect-ratio:4/3;background:white;border:1px solid #bbb;padding:9px"><b style="font-size:9px">A Study on Co-creation</b><div style="height:68%;margin-top:7px;background:#202020"></div></div><b style="display:block;font-size:10px;margin-top:5px">01 Research Title</b><span style="font-size:8px;color:#666">研究タイトル</span></div>
+        <div><div style="aspect-ratio:4/3;background:white;border:1px solid #bbb;padding:9px"><div style="height:28%;background:#111"></div><div style="display:flex;gap:4px;height:55%;margin-top:5px"><i style="flex:1;background:#ddd"></i><i style="flex:1;background:#e22"></i></div></div><b style="display:block;font-size:10px;margin-top:5px">02 Research Context</b><span style="font-size:8px;color:#666">研究背景</span></div>
+        <div><div style="aspect-ratio:4/3;background:white;border:1px solid #bbb;padding:9px"><div style="height:18%;background:#e22"></div><div style="height:68%;margin-top:5px;background:linear-gradient(90deg,#ddd 48%,transparent 48%,transparent 52%,#222 52%)"></div></div><b style="display:block;font-size:10px;margin-top:5px">03 Current Problem</b><span style="font-size:8px;color:#666">現状の課題</span></div>
+      </div>
+    </div>
+    <div class="card-body"><h3>B. 3 列大缩略图</h3><p>画面内容更清晰，但在笔记本和窄屏上需要滚动，不能一眼看到全部 16 页。</p></div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:14px;background:#f3f3f0">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px">
+        <div style="position:relative;aspect-ratio:4/3;background:white;border:1px solid #bbb;padding:8px"><b style="font-size:8px">A Study on Co-creation</b><div style="height:70%;margin-top:6px;background:#202020"></div><div style="position:absolute;inset:auto 0 0;background:rgba(0,0,0,.78);color:white;padding:5px;font-size:8px">01 Research Title<br><span style="opacity:.72">研究タイトル</span></div></div>
+        <div style="position:relative;aspect-ratio:4/3;background:white;border:1px solid #bbb;padding:8px"><div style="height:28%;background:#111"></div><div style="display:flex;gap:4px;height:55%;margin-top:5px"><i style="flex:1;background:#ddd"></i><i style="flex:1;background:#e22"></i></div><div style="position:absolute;inset:auto 0 0;background:rgba(0,0,0,.78);color:white;padding:5px;font-size:8px">02 Research Context<br><span style="opacity:.72">研究背景</span></div></div>
+        <div style="position:relative;aspect-ratio:4/3;background:white;border:1px solid #bbb;padding:8px"><div style="height:18%;background:#e22"></div><div style="height:68%;margin-top:5px;background:#222"></div><div style="position:absolute;inset:auto 0 0;background:rgba(0,0,0,.78);color:white;padding:5px;font-size:8px">03 Current Problem<br><span style="opacity:.72">現状の課題</span></div></div>
+        <div style="position:relative;aspect-ratio:4/3;background:#171717;border:1px solid #333;padding:8px"><div style="height:22%;background:white"></div><div style="height:50%;margin-top:8px;border:2px solid #e22"></div><div style="position:absolute;inset:auto 0 0;background:rgba(0,0,0,.78);color:white;padding:5px;font-size:8px">04 Research Gap<br><span style="opacity:.72">研究ギャップ</span></div></div>
+      </div>
+    </div>
+    <div class="card-body"><h3>C. 画面内标题覆盖</h3><p>最节省垂直空间，但标题会遮挡部分幻灯片内容，与“直接预览画面”的目标有冲突。</p></div>
+  </div>
+</div>

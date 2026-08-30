@@ -1,0 +1,16 @@
+{
+  "id": "s18i-scatter-overview",
+  "chapterId": "deep-analysis",
+  "layout": "data",
+  "chapter": "5",
+  "chapterTitle": "深度分析",
+  "shortTitle": "阶段五：全景散点与均值",
+  "animation": "statement-rise",
+  "legacyLayout": "S06",
+  "legacyClass": "slide",
+  "assets": [
+    "entropy-overview-chart"
+  ],
+  "claims": [],
+  "markup": "<div class=\"canvas-card analysis-data-slide\"><div class=\"chrome-min\"><div class=\"l\">PHASE 5 · DEEP COGNITIVE ANALYSIS · SCATTER OVERVIEW</div><div class=\"r\">27 / 33</div></div><div class=\"analysis-header-row\"><div class=\"analysis-header-left\"><h2 class=\"analysis-kicker\" data-i18n=\"slides.s18i.title\">全量 13 人 4 维指标配对散点与均值检验全景</h2><div class=\"analysis-kicker-desc\" data-i18n=\"slides.s18i.guide\">【全景图示】展示 GTE、E_gain、η 与空间注视均衡度（SGE）在 13 位被试身上的分布</div></div><div class=\"analysis-anim-badge\" aria-label=\"Scatter Animation\"><span class=\"analysis-anim-label\">DISTRIBUTION</span><svg width=\"116\" height=\"30\" viewBox=\"0 0 116 30\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><circle cx=\"16\" cy=\"18\" r=\"3\" fill=\"var(--text-helper)\" /><circle cx=\"36\" cy=\"12\" r=\"3\" fill=\"var(--accent)\" /><circle cx=\"66\" cy=\"16\" r=\"3\" fill=\"var(--text-helper)\" /><circle cx=\"86\" cy=\"8\" r=\"3\" fill=\"var(--accent)\" /><line x1=\"16\" y1=\"18\" x2=\"36\" y2=\"12\" stroke=\"var(--accent)\" stroke-width=\"1.2\" opacity=\"0.6\" /><line x1=\"66\" y1=\"16\" x2=\"86\" y2=\"8\" stroke=\"var(--accent)\" stroke-width=\"1.2\" opacity=\"0.6\" /></svg></div></div><div class=\"analysis-body-group\"><div style=\"background:#fff;border:1px solid var(--border-subtle);border-radius:4px;overflow:hidden;display:flex;justify-content:center;align-items:center;height:380px\"><img src=\"asset:entropy-overview-chart\" alt=\"13人4维指标配对图\" style=\"max-width:100%;max-height:100%;object-fit:contain\"></div></div><div class=\"analysis-ledger-v2\"><div class=\"analysis-ledger-row\"><div class=\"analysis-ledger-left\"><span class=\"analysis-ledger-tag\">CONSISTENCY</span><strong class=\"analysis-ledger-title\" data-i18n=\"slides.s18i.finding1.title\" data-hybrid-ja=\"never\">13 人全局一致性</strong></div><p class=\"analysis-ledger-detail\" data-i18n=\"slides.s18i.finding1.body\" data-hybrid-ja=\"never\">右上图 E_gain 浅绿色连线全部陡峭向上倾斜，全部 13 位被试无一人下降，效应高度一致。</p></div><div class=\"analysis-ledger-row\"><div class=\"analysis-ledger-left\"><span class=\"analysis-ledger-tag\">EVALUATION</span><strong class=\"analysis-ledger-title\" data-i18n=\"slides.s18i.finding2.title\" data-hybrid-ja=\"never\">多维协同优化</strong></div><p class=\"analysis-ledger-detail\" data-i18n=\"slides.s18i.finding2.body\" data-hybrid-ja=\"never\">空间注视均衡度 SGE 与认知能效比 η 同步显著上扬，展现出全面的认知改善。</p></div></div></div>"
+}

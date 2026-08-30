@@ -23,6 +23,15 @@ A static browser-based eye tracking experiment tool powered by WebGazer.js. The 
 - `webgazer.js` is the local WebGazer bundle.
 - `mediapipe/face_mesh/` is required by the bundled WebGazer tracker through `faceMeshSolutionPath`; keep this directory when publishing.
 
+## Presentation Slide Deck
+
+The repository also includes the master's research presentation deck:
+
+- Install dependencies: `npm ci`
+- Build the deck: `npm run build`
+- Output artifact: `dist/index.html` (generated standalone HTML bundle, do not edit directly)
+- Development server: `npm start`
+
 ## GitHub Pages
 
 This project is a static site. Publish the repository from the `main` branch and the repository root.

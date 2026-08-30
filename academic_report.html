@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>植物标牌眼动追踪实验学术分析报告</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --fg: #111111;
+      --muted: #555555;
+      --border: #e2e2e2;
+      --border-dark: #111111;
+      --surface: #f8f8f8;
+      --sig-green: #097969;
+      --sig-bg: #e6f4ea;
+      --ns-color: #666666;
+      --ns-bg: #f0f0f0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+      line-height: 1.55;
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    /* ─── Header ─── */
+    header {
+      border-bottom: 2px solid var(--border-dark);
+      padding-bottom: 20px;
+      margin-bottom: 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .header-left h1 {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+    }
+
+    .lang-switcher {
+      display: inline-flex;
+      border: 1px solid var(--border-dark);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .lang-btn {
+      background: var(--bg);
+      border: none;
+      border-right: 1px solid var(--border-dark);
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.1s;
+    }
+    .lang-btn:last-child { border-right: none; }
+    .lang-btn.active {
+      background: var(--fg);
+      color: var(--bg);
+    }
+
+    /* ─── 3 Main Sections ─── */
+    .main-section {
+      margin-bottom: 48px;
+    }
+
+    .section-header {
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -0.2px;
+      border-bottom: 1.5px solid var(--border-dark);
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .section-num {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--muted);
+      margin-right: 6px;
+    }
+
+    /* ─── Section 1: 实验简介 ─── */
+    .intro-text {
+      font-size: 13.5px;
+      color: var(--fg);
+      line-height: 1.6;
+      border-left: 3px solid var(--border-dark);
+      background: var(--surface);
+      padding: 12px 16px;
+    }
+
+    /* ─── Section 2: 数据一览 ─── */
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 800px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .grid-4 { grid-template-columns: 1fr; } }
+
+    .stat-card {
+      border: 1px solid var(--border);
+      padding: 16px;
+      background: var(--bg);
+    }
+    .stat-card.highlight {
+      border: 1.5px solid var(--border-dark);
+      background: var(--surface);
+    }
+    .stat-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .stat-val {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .stat-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .viewer-wrap {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .tab-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .tab-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: var(--fg);
+      color: var(--bg);
+      border-color: var(--fg);
+    }
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 680px) { .heatmap-grid { grid-template-columns: 1fr; } }
+    .heatmap-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 10px;
+    }
+    .heatmap-img {
+      width: 100%;
+      aspect-ratio: 297/210;
+      background: #000;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+    .heatmap-img img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    /* ─── Section 3: 数据分析（并列展示） ─── */
+    .analysis-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .analysis-card {
+      border: 1px solid var(--border);
+      background: var(--bg);
+      padding: 18px;
+    }
+    .analysis-card.significant {
+      border: 1.5px solid var(--border-dark);
+      background: var(--surface);
+    }
+
+    .analysis-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+    .analysis-title {
+      font-size: 15px;
+      font-weight: 800;
+    }
+    .sig-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      background: var(--sig-bg);
+      color: var(--sig-green);
+      font-weight: 700;
+      font-size: 11px;
+    }
+    .ns-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      background: var(--ns-bg);
+      color: var(--ns-color);
+      font-weight: 600;
+      font-size: 11px;
+    }
+
+    .analysis-result {
+      font-size: 13.5px;
+      color: var(--fg);
+      line-height: 1.55;
+      margin-bottom: 6px;
+    }
+    .analysis-neutral-note {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+      line-height: 1.45;
+    }
+
+    /* ─── Progressive Disclosure Details ─── */
+    details.detail-drawer {
+      margin-top: 10px;
+      border-top: 1px dashed var(--border);
+      padding-top: 8px;
+    }
+    details.detail-drawer summary {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    details.detail-drawer summary::-webkit-details-marker { display: none; }
+    details.detail-drawer summary:hover { color: var(--fg); }
+    .drawer-content {
+      padding-top: 12px;
+      font-size: 12.5px;
+      color: var(--fg);
+    }
+
+    /* ─── Tables ─── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+      margin: 8px 0;
+    }
+    th, td {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+    th {
+      background: #f0f0f0;
+      font-weight: 700;
+      font-size: 11.5px;
+    }
+    .order-inline {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin: 8px 0;
+      font-size: 12px;
+    }
+    .order-item {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dotted var(--border);
+      padding-bottom: 2px;
+    }
+
+    /* ─── Footer ─── */
+    footer {
+      margin-top: 56px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    a { color: var(--fg); text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ─── HEADER & TRILINGUAL SWITCHER ─── -->
+  <header>
+    <div class="header-left">
+      <h1 id="txt-main-title">植物标牌眼动追踪实验学术分析报告</h1>
+    </div>
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLang('zh')">ZH (中文)</button>
+      <button class="lang-btn" onclick="setLang('ja')">JA (日本語)</button>
+      <button class="lang-btn" onclick="setLang('en')">EN (English)</button>
+    </div>
+  </header>
+
+  <!-- ═════════════════════════════════════════════════════════════
+       1. 实验简介 (EXPERIMENT OVERVIEW)
+       ═════════════════════════════════════════════════════════════ -->
+  <section class="main-section">
+    <div class="section-header">
+      <span><span class="section-num">01</span><span id="h-sec-1">实验简介</span></span>
+      <span style="font-size: 12px; font-weight: normal; color: var(--muted);" id="sub-sec-1">Overview</span>
+    </div>
+    <div class="intro-text" id="txt-intro">
+      针对植物园解说标牌普遍存在的“通读率低”与“知识留存差”两大痛点，本研究以福冈市植物园温室为对象，确立了 A/R/S 共创设计三原则（A: 激发性氛围、R: 受众相关性、S: 结构清晰度）。通过 2×2 交叉平衡被试内眼动追踪实验（N=13 位被试，共 27 次有效试次），客观对比传统标牌（对照组：A1/B1）与 A/R/S 互动标牌（实验组：A2/B2）的注意力重构机制。
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════
+       2. 数据一览 (DATA SUMMARY)
+       ═════════════════════════════════════════════════════════════ -->
+  <section class="main-section">
+    <div class="section-header">
+      <span><span class="section-num">02</span><span id="h-sec-2">数据一览</span></span>
+      <span style="font-size: 12px; font-weight: normal; color: var(--muted);" id="sub-sec-2">Data Summary</span>
+    </div>
+
+    <!-- 4 个宏观统计卡片 -->
+    <div class="grid-4">
+      <div class="stat-card">
+        <div class="stat-label" id="c-lbl-1">样本规模</div>
+        <div class="stat-val">13 <span style="font-size: 13px; font-weight: normal; color: var(--muted);">被试 / 27 试次</span></div>
+        <div class="stat-sub">Group A (7人) + Group B (6人)</div>
+      </div>
+      <div class="stat-card highlight">
+        <div class="stat-label" id="c-lbl-2">文本注视占比</div>
+        <div class="stat-val">-26.26%</div>
+        <div class="stat-sub"><span class="sig-badge">p &lt; 0.001 ***</span> d = -1.238</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label" id="c-lbl-3">前 10 秒初动通读率</div>
+        <div class="stat-val">38.6% → 45.3%</div>
+        <div class="stat-sub">干预组初动阅读率提升 +6.7%</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label" id="c-lbl-4">采样点与有效率</div>
+        <div class="stat-val">49,083 <span style="font-size: 13px; font-weight: normal; color: var(--muted);">点</span></div>
+        <div class="stat-sub">有效率 88.8% · 56.5 Hz</div>
+      </div>
+    </div>
+
+    <!-- 群体综合热力图看板 -->
+    <div class="viewer-wrap">
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tab-a" onclick="switchViewer('A')">Group A 对比 (A1 对照 vs A2 实验)</button>
+        <button class="tab-btn" id="tab-b" onclick="switchViewer('B')">Group B 对比 (B1 对照 vs B2 实验)</button>
+      </div>
+      <div class="heatmap-grid">
+        <div class="heatmap-box">
+          <strong id="v-title-left" style="font-size: 12.5px;">A1: 传统标牌 (对照组)</strong>
+          <div class="heatmap-img">
+            <img id="v-img-left" src="outputs/heatmaps_group/a1_group_density.svg" alt="A1 Heatmap">
+          </div>
+        </div>
+        <div class="heatmap-box">
+          <strong id="v-title-right" style="font-size: 12.5px;">A2: 互动标牌 (实验组)</strong>
+          <div class="heatmap-img">
+            <img id="v-img-right" src="outputs/heatmaps_group/a2_group_density.svg" alt="A2 Heatmap">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 可展开的 13 位被试试次级明细表 -->
+    <details class="detail-drawer" style="border: 1px solid var(--border); padding: 12px; background: var(--surface);">
+      <summary>
+        <span id="txt-sum-trials">查看 13 位被试全部 27 次试次级数据表</span>
+        <span style="font-size: 11px; font-weight: normal; color: var(--muted);">[＋ 展开表格]</span>
+      </summary>
+      <div class="drawer-content">
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>被试 ID</th>
+                <th>姓名</th>
+                <th>组别</th>
+                <th>材料</th>
+                <th>条件</th>
+                <th>时长</th>
+                <th>点数</th>
+                <th>有效率</th>
+                <th>采样率</th>
+                <th>重心 (X, Y)</th>
+              </tr>
+            </thead>
+            <tbody id="participant-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════
+       3. 数据分析 (DATA ANALYSIS - 并列展示全部基础与深度分析)
+       ═════════════════════════════════════════════════════════════ -->
+  <section class="main-section">
+    <div class="section-header">
+      <span><span class="section-num">03</span><span id="h-sec-3">数据分析</span></span>
+      <span style="font-size: 12px; font-weight: normal; color: var(--muted);" id="sub-sec-3">Data Analysis</span>
+    </div>
+
+    <div class="analysis-list">
+
+      <!-- 1. 基础分析：A/R/S 原则体系与 70 块既有标牌基线审计 -->
+      <div class="analysis-card">
+        <div class="analysis-head">
+          <div class="analysis-title" id="t-a-audit-title">1. A/R/S 原则体系与 70 块既有标牌基线审计 (A/R/S Principles & Audit)</div>
+          <span class="ns-badge" id="tag-audit">基线审计</span>
+        </div>
+        <div class="analysis-result" id="t-a-audit-res">
+          使用 Signage Annotator 审计福冈市植物园温室现存全部 70 块标牌（N=70），确认既有标牌系统性缺失 A 原则（激发性氛围）与 R 原则（受众相关性）。
+        </div>
+        <div class="analysis-neutral-note" id="t-a-audit-note">
+          客观中立评价：既有标牌多为密集的专业植物学术语与分类介绍，单向输出特征显著，缺乏将植物特征与游客感官体验锚定的桥梁。
+        </div>
+        <details class="detail-drawer">
+          <summary><span id="txt-det-audit">查看 A/R/S 原则定义与审计细节</span><span style="font-size: 11px; font-weight: normal;">[＋ 展开细节]</span></summary>
+          <div class="drawer-content">
+            <p><strong>A (Inspirational Atmosphere):</strong> 疑问句破题与拟人化叙事，激发初始探索欲望。</p>
+            <p><strong>R (Audience Relevance):</strong> 植物特征与读者感官（触觉/嗅觉/日常经验）建立关联锚定。</p>
+            <p><strong>S (Structural Clarity):</strong> 信息清晰分层，提取核心特性图标，减少长篇文字阻力。</p>
+          </div>
+        </details>
+      </div>
+
+      <!-- 2. 基础分析：受众相关性 (R 原则) 区域注视跃升与效应分解 -->
+      <div class="analysis-card significant">
+        <div class="analysis-head">
+          <div class="analysis-title" id="t-a-rshift-title">2. 受众相关性 (R 原则) 区域注视跃升与效应分解 (Audience Relevance Shift)</div>
+          <span class="sig-badge" id="tag-rshift">核心决定变量</span>
+        </div>
+        <div class="analysis-result" id="t-a-rshift-res">
+          经验相关性区域（R 区域）前 10 秒初动阅读率由 5.0% 跃升至 21.4%，全时长注视占比由 8.5% 跃升至 35.1%（提升超 4 倍，全被试均呈上升趋势）。
+        </div>
+        <div class="analysis-neutral-note" id="t-a-rshift-note">
+          客观中立评价：效应分解显示，R 原则（经验相关性锚定）是捕获并维持视线的决定性变量；而单纯的 A 原则（语言修辞）无法产生长久注视，共创设计应优先锚定生活体验而非单纯文字润色。
+        </div>
+        <details class="detail-drawer">
+          <summary><span id="txt-det-rshift">查看 R 原则注视跃升与效应分解参数</span><span style="font-size: 11px; font-weight: normal;">[＋ 展开细节]</span></summary>
+          <div class="drawer-content">
+            <p>前 10 秒初动通读率：对照组 <strong>5.0%</strong> → 实验组 <strong>21.4%</strong>（提升 4.28 倍）</p>
+            <p>全时长注视占比：对照组 <strong>8.5%</strong> → 实验组 <strong>35.1%</strong>（提升 4.13 倍）</p>
+            <p>全标牌 10 秒初动通读率：对照组 <strong>38.6%</strong> → 实验组 <strong>45.3%</strong>（+6.7%）</p>
+          </div>
+        </details>
+      </div>
+
+      <!-- 3. 说明文本注视占比 -->
+      <div class="analysis-card significant">
+        <div class="analysis-head">
+          <div class="analysis-title" id="t-a-text-title">3. 说明文本区注视占比 (Body Text Dwell Ratio)</div>
+          <span class="sig-badge" id="b-text-sig">显著差异 (p &lt; 0.001 ***)</span>
+        </div>
+        <div class="analysis-result" id="t-a-text-res">
+          说明文本区注视比例从对照组的 44.34% 降至实验组的 18.09%（减少 26.26%，t(12) = -4.463, p &lt; 0.001, Cohen's d = -1.238）。
+        </div>
+        <div class="analysis-neutral-note" id="t-a-text-note">
+          客观中立评价：排版调整有效减少了读者在密集文本上的停留时间；但文本注视的缩减是否会导致植物学专业知识的记忆留存率下降，仍需结合后测问卷进一步评估。
+        </div>
+        <details class="detail-drawer">
+          <summary><span id="txt-det-1">查看完整推断统计参数</span><span style="font-size: 11px; font-weight: normal;">[＋ 展开细节]</span></summary>
+          <div class="drawer-content">
+            <table>
+              <thead>
+                <tr>
+                  <th>指标</th>
+                  <th>对照组 Mean (SD)</th>
+                  <th>实验组 Mean (SD)</th>
+                  <th>均值差 ΔM</th>
+                  <th>t 值 (df=12)</th>
+                  <th>p 值</th>
+                  <th>Cohen's d</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>说明文本注视占比</td>
+                  <td>44.34% (24.01)</td>
+                  <td>18.09% (17.88)</td>
+                  <td>-26.26%</td>
+                  <td>-4.463</td>
+                  <td>&lt; 0.001 ***</td>
+                  <td>-1.238</td>
+                </tr>
+                <tr>
+                  <td>主图片注视占比</td>
+                  <td>24.31% (19.28)</td>
+                  <td>20.17% (22.61)</td>
+                  <td>-4.14%</td>
+                  <td>-0.826</td>
+                  <td>0.425 (ns)</td>
+                  <td>-0.229</td>
+                </tr>
+                <tr>
+                  <td>总浏览时长 (秒)</td>
+                  <td>33.11s (17.31)</td>
+                  <td>35.24s (27.38)</td>
+                  <td>+2.13s</td>
+                  <td>0.385</td>
+                  <td>0.707 (ns)</td>
+                  <td>0.107</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+
+      <!-- 4. 阅读顺序 -->
+      <div class="analysis-card">
+        <div class="analysis-head">
+          <div class="analysis-title" id="t-a-order-title">4. 阅读顺序与时序 (Reading Order)</div>
+          <span class="ns-badge" id="tag-order">动线时序记录</span>
+        </div>
+        <div class="analysis-result" id="t-a-order-res">
+          对照组进入顺序为“左图 (6.1s) → 右文 (8.6s) → 标题 (33.7s)”；实验组进入顺序为“左图 (4.5s) → 说明区 (15.0s) → 气泡 (15.7s) → 图标 (20.4s)”。
+        </div>
+        <div class="analysis-neutral-note" id="t-a-order-note">
+          客观中立评价：实验组新增的拟人化对话气泡（0.64%）与底部特性图标（2.14%）注视时间占比偏低，部分被试未在早期注意到图标区域。
+        </div>
+        <details class="detail-drawer">
+          <summary><span id="txt-det-2">查看各区域首次进入时间 (TTFF) 与排位明细</span><span style="font-size: 11px; font-weight: normal;">[＋ 展开细节]</span></summary>
+          <div class="drawer-content">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div>
+                <strong>对照组进入时序 (TTFF)：</strong>
+                <div class="order-inline">
+                  <div class="order-item"><span>1st: 左侧植物主照片</span><span>TTFF: 6.14s (Rank 1.20)</span></div>
+                  <div class="order-item"><span>2nd: 右侧说明文字区</span><span>TTFF: 8.56s (Rank 1.54)</span></div>
+                  <div class="order-item"><span>3rd: 大标题与分类区</span><span>TTFF: 33.73s (Rank 3.00)</span></div>
+                </div>
+              </div>
+              <div>
+                <strong>实验组进入时序 (TTFF)：</strong>
+                <div class="order-inline">
+                  <div class="order-item"><span>1st: 左侧植物主照片</span><span>TTFF: 4.54s (Rank 1.63)</span></div>
+                  <div class="order-item"><span>2nd: 右侧说明与触觉引导</span><span>TTFF: 14.95s (Rank 1.75)</span></div>
+                  <div class="order-item"><span>3rd: 对话与感官气泡</span><span>TTFF: 15.66s (Rank 3.13)</span></div>
+                  <div class="order-item"><span>4th: 底部特性图标组</span><span>TTFF: 20.41s (Rank 3.80)</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <!-- 5. 区域切换频率 -->
+      <div class="analysis-card">
+        <div class="analysis-head">
+          <div class="analysis-title" id="t-a-switch-title">5. 区域切换频率 (Switching Frequency)</div>
+          <span class="ns-badge" id="tag-switch">无显著差异 (p = 0.908)</span>
+        </div>
+        <div class="analysis-result" id="t-a-switch-res">
+          两组区域切换速率未呈现统计学显著差异（对照组 0.17 ± 0.26 vs 实验组 0.16 ± 0.18 switches/s，t(12) = -0.119, p = 0.9075, d = -0.033）。
+        </div>
+        <div class="analysis-neutral-note" id="t-a-switch-note">
+          客观中立评价：增加互动元素并未显著改变被试在不同视觉区域之间的跳变频次，整体视线迁移节奏基本保持恒定。
+        </div>
+        <details class="detail-drawer">
+          <summary><span id="txt-det-3">查看切换统计参数</span><span style="font-size: 11px; font-weight: normal;">[＋ 展开细节]</span></summary>
+          <div class="drawer-content">
+            <p>对照组切换速率：<strong>0.17 ± 0.26 switches/s</strong> · 实验组切换速率：<strong>0.16 ± 0.18 switches/s</strong></p>
+            <p>配对样本 t 检验：<code>t(12) = -0.119, p = 0.9075 (ns), Cohen's d = -0.033</code></p>
+          </div>
+        </details>
+      </div>
+
+      <!-- 6. 眼跳率与跳跃幅度 -->
+      <div class="analysis-card">
+        <div class="analysis-head">
+          <div class="analysis-title" id="t-a-sac-title">6. 眼跳率与跳跃幅度 (Saccade Dynamics)</div>
+          <span class="ns-badge" id="tag-sac">无显著差异 (p > 0.05)</span>
+        </div>
+        <div class="analysis-result" id="t-a-sac-res">
+          眼跳发生率（0.78 Hz vs 0.77 Hz, p = 0.9105）与平均眼跳物理幅度（74.60mm vs 62.92mm, p = 0.4571）在两组间均无统计学显著差异。
+        </div>
+        <div class="analysis-neutral-note" id="t-a-sac-note">
+          客观中立评价：虽然实验组平均眼跳幅度数值上有 11.68mm 的缩短趋势，但在样本内变异较大，未达到统计学显著水平（t = -0.768, p = 0.457）。
+        </div>
+        <details class="detail-drawer">
+          <summary><span id="txt-det-4">查看眼跳动力学检验数据</span><span style="font-size: 11px; font-weight: normal;">[＋ 展开细节]</span></summary>
+          <div class="drawer-content">
+            <p>眼跳发生率 (Rate)：对照 <strong>0.78 ± 0.88 Hz</strong> vs 实验 <strong>0.77 ± 0.83 Hz</strong> (<code>t = -0.115, p = 0.9105</code>)</p>
+            <p>平均跳跃幅度 (Amp)：对照 <strong>74.60 ± 56.62 mm</strong> vs 实验 <strong>62.92 ± 36.79 mm</strong> (<code>t = -0.768, p = 0.4571, d = -0.213</code>)</p>
+          </div>
+        </details>
+      </div>
+
+      <!-- 7. 重读与回视行为 -->
+      <div class="analysis-card">
+        <div class="analysis-head">
+          <div class="analysis-title" id="t-a-re-title">7. 重读与回视行为 (Re-reading Behavior)</div>
+          <span class="ns-badge" id="tag-re">无显著差异 (p = 0.421)</span>
+        </div>
+        <div class="analysis-result" id="t-a-re-res">
+          重读时长占总注视时长的比例在两组间差异不显著（对照组 38.04% ± 35.45% vs 实验组 32.85% ± 26.52%，t(12) = -0.834, p = 0.4205）。
+        </div>
+        <div class="analysis-neutral-note" id="t-a-re-note">
+          客观中立评价：两组被试在重读总时间投入上相近；对照组重读主要发生于文本内部，实验组重读分散在图标与气泡之间。
+        </div>
+        <details class="detail-drawer">
+          <summary><span id="txt-det-5">查看重读统计数据</span><span style="font-size: 11px; font-weight: normal;">[＋ 展开细节]</span></summary>
+          <div class="drawer-content">
+            <p>重读时长占比：对照 <strong>38.04%</strong> vs 实验 <strong>32.85%</strong> (<code>t(12) = -0.834, p = 0.4205 (ns), d = -0.231</code>)</p>
+            <p>平均重访次数：对照组文本区 1.15 次 vs 实验组图标区 0.46 次、气泡区 0.23 次。</p>
+          </div>
+        </details>
+      </div>
+
+      <!-- 8. 分组任务对比 -->
+      <div class="analysis-card">
+        <div class="analysis-head">
+          <div class="analysis-title" id="t-a-grp-title">8. 分组任务对比 (Group A vs Group B)</div>
+          <span class="ns-badge" id="tag-grp">任务异质性表现</span>
+        </div>
+        <div class="analysis-result" id="t-a-grp-res">
+          Group A（简单标牌）实验组时长呈现缩短趋势（19.34s → 14.30s, p = 0.059）；而 Group B（深度标牌）实验组时长呈现增加趋势（49.19s → 59.67s, p = 0.415）。
+        </div>
+        <div class="analysis-neutral-note" id="t-a-grp-note">
+          客观中立评价：标牌互动化并非在所有情境下都能缩短浏览时间；在信息量大的深度标牌中，互动元素反而延长了总视线驻留时间。
+        </div>
+        <details class="detail-drawer">
+          <summary><span id="txt-det-6">查看子组统计参数表</span><span style="font-size: 11px; font-weight: normal;">[＋ 展开细节]</span></summary>
+          <div class="drawer-content">
+            <table>
+              <thead>
+                <tr>
+                  <th>实验子组</th>
+                  <th>任务类型</th>
+                  <th>指标</th>
+                  <th>对照组</th>
+                  <th>实验组</th>
+                  <th>变化幅度</th>
+                  <th>p 值</th>
+                  <th>Cohen's d</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td rowspan="2">Group A (N=7)</td>
+                  <td rowspan="2">简单植物标牌</td>
+                  <td>说明文本注视占比</td>
+                  <td>47.74%</td>
+                  <td>19.14%</td>
+                  <td>-28.60%</td>
+                  <td><strong>0.026 *</strong></td>
+                  <td>-1.109</td>
+                </tr>
+                <tr>
+                  <td>总浏览时长</td>
+                  <td>19.34s</td>
+                  <td>14.30s</td>
+                  <td>-5.04s (-26.1%)</td>
+                  <td>0.059 (ns)</td>
+                  <td>-0.875</td>
+                </tr>
+                <tr>
+                  <td rowspan="2">Group B (N=6)</td>
+                  <td rowspan="2">深度信息标牌</td>
+                  <td>说明文本注视占比</td>
+                  <td>40.38%</td>
+                  <td>16.85%</td>
+                  <td>-23.53%</td>
+                  <td><strong>0.0077 **</strong></td>
+                  <td>-1.755</td>
+                </tr>
+                <tr>
+                  <td>总浏览时长</td>
+                  <td>49.19s</td>
+                  <td>59.67s</td>
+                  <td>+10.48s (+21.3%)</td>
+                  <td>0.415 (ns)</td>
+                  <td>0.362</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ─── -->
+  <footer>
+    <div>
+      <span>Eye Tracking Laboratory</span> · <span>Kyushu University</span>
+    </div>
+    <div>
+      <a href="data/consolidated/all_trials_summary.csv" download>CSV Summary</a> · 
+      <a href="outputs/reports_and_tables/academic_metrics_summary.json" download>JSON Dataset</a> · 
+      <a href="outputs/reports_and_tables/academic_statistical_report.md" download>Markdown Report</a>
+    </div>
+  </footer>
+
+</div>
+
+<!-- ─── I18N DICTIONARY & SCRIPTS ─── -->
+<script>
+const I18N = {
+  zh: {
+    mainTitle: "植物标牌眼动追踪实验学术分析报告",
+    hSec1: "实验简介", subSec1: "Overview",
+    txtIntro: "针对植物园解说标牌普遍存在的“通读率低”与“知识留存差”两大痛点，本研究以福冈市植物园温室为对象，确立了 A/R/S 共创设计三原则（A: 激发性氛围、R: 受众相关性、S: 结构清晰度）。通过 2×2 交叉平衡被试内眼动追踪实验（N=13 位被试，共 27 次有效试次），客观对比传统标牌（对照组：A1/B1）与 A/R/S 互动标牌（实验组：A2/B2）的注意力重构机制。",
+    hSec2: "数据一览", subSec2: "Data Summary",
+    cLbl1: "样本规模", cLbl2: "文本注视占比", cLbl3: "前 10 秒初动通读率", cLbl4: "采样点与有效率",
+    vTitleA1: "A1: 传统标牌 (对照组)", vTitleA2: "A2: 互动标牌 (实验组)",
+    vTitleB1: "B1: 传统标牌 (对照组)", vTitleB2: "B2: 互动标牌 (实验组)",
+    txtSumTrials: "查看 13 位被试全部 27 次试次级数据表",
+    hSec3: "数据分析", subSec3: "Data Analysis",
+    tAAuditTitle: "1. A/R/S 原则体系与 70 块既有标牌基线审计 (A/R/S Principles & Audit)",
+    tagAudit: "基线审计",
+    tAAuditRes: "使用 Signage Annotator 审计福冈市植物园温室现存全部 70 块标牌（N=70），确认既有标牌系统性缺失 A 原则（激发性氛围）与 R 原则（受众相关性）。",
+    tAAuditNote: "客观中立评价：既有标牌多为密集的专业植物学术语与分类介绍，单向输出特征显著，缺乏将植物特征与游客感官体验锚定的桥梁。",
+    txtDetAudit: "查看 A/R/S 原则定义与审计细节",
+    tARshiftTitle: "2. 受众相关性 (R 原则) 区域注视跃升与效应分解 (Audience Relevance Shift)",
+    tagRshift: "核心决定变量",
+    tARshiftRes: "经验相关性区域（R 区域）前 10 秒初动阅读率由 5.0% 跃升至 21.4%，全时长注视占比由 8.5% 跃升至 35.1%（提升超 4 倍，全被试均呈上升趋势）。",
+    tARshiftNote: "客观中立评价：效应分解显示，R 原则（经验相关性锚定）是捕获并维持视线的决定性变量；而单纯的 A 原则（语言修辞）无法产生长久注视，共创设计应优先锚定生活体验而非单纯文字润色。",
+    txtDetRshift: "查看 R 原则注视跃升与效应分解参数",
+    tATextTitle: "3. 说明文本区注视占比 (Body Text Dwell Ratio)",
+    bTextSig: "显著差异 (p < 0.001 ***)",
+    tATextRes: "说明文本区注视比例从对照组的 44.34% 降至实验组的 18.09%（减少 26.26%，t(12) = -4.463, p < 0.001, Cohen's d = -1.238）。",
+    tATextNote: "客观中立评价：排版调整有效减少了读者在密集文本上的停留时间；但文本注视的缩减是否会导致植物学专业知识的记忆留存率下降，仍需结合后测问卷进一步评估。",
+    txtDet1: "查看完整推断统计参数",
+    tAOrderTitle: "4. 阅读顺序与时序 (Reading Order)",
+    tagOrder: "动线时序记录",
+    tAOrderRes: "对照组进入顺序为“左图 (6.1s) → 右文 (8.6s) → 标题 (33.7s)”；实验组进入顺序为“左图 (4.5s) → 说明区 (15.0s) → 气泡 (15.7s) → 图标 (20.4s)”。",
+    tAOrderNote: "客观中立评价：实验组新增的拟人化对话气泡（0.64%）与底部特性图标（2.14%）注视时间占比偏低，部分被试未在早期注意到图标区域。",
+    txtDet2: "查看各区域首次进入时间 (TTFF) 与排位明细",
+    tASwitchTitle: "5. 区域切换频率 (Switching Frequency)",
+    tagSwitch: "无显著差异 (p = 0.908)",
+    tASwitchRes: "两组区域切换速率未呈现统计学显著差异（对照组 0.17 ± 0.26 vs 实验组 0.16 ± 0.18 switches/s，t(12) = -0.119, p = 0.9075, d = -0.033）。",
+    tASwitchNote: "客观中立评价：增加互动元素并未显著改变被试在不同视觉区域之间的跳变频次，整体视线迁移节奏基本保持恒定。",
+    txtDet3: "查看切换统计参数",
+    tASacTitle: "6. 眼跳率与跳跃幅度 (Saccade Dynamics)",
+    tagSac: "无显著差异 (p > 0.05)",
+    tASacRes: "眼跳发生率（0.78 Hz vs 0.77 Hz, p = 0.9105）与平均眼跳物理幅度（74.60mm vs 62.92mm, p = 0.4571）在两组间均无统计学显著差异。",
+    tASacNote: "客观中立评价：虽然实验组平均眼跳幅度数值上有 11.68mm 的缩短趋势，但在样本内变异较大，未达到统计学显著水平（t = -0.768, p = 0.457）。",
+    txtDet4: "查看眼跳动力学检验数据",
+    tAReTitle: "7. 重读与回视行为 (Re-reading Behavior)",
+    tagRe: "无显著差异 (p = 0.421)",
+    tAReRes: "重读时长占总注视时长的比例在两组间差异不显著（对照组 38.04% ± 35.45% vs 实验组 32.85% ± 26.52%，t(12) = -0.834, p = 0.4205）。",
+    tAReNote: "客观中立评价：两组被试在重读总时间投入上相近；对照组重读主要发生于文本内部，实验组重读分散在图标与气泡之间。",
+    txtDet5: "查看重读统计数据",
+    tAGrpTitle: "8. 分组任务对比 (Group A vs Group B)",
+    tagGrp: "任务异质性表现",
+    tAGrpRes: "Group A（简单标牌）实验组时长呈现缩短趋势（19.34s → 14.30s, p = 0.059）；而 Group B（深度标牌）实验组时长呈现增加趋势（49.19s → 59.67s, p = 0.415）。",
+    tAGrpNote: "客观中立评价：标牌互动化并非在所有情境下都能缩短浏览时间；在信息量大的深度标牌中，互动元素反而延长了总视线驻留时间。",
+    txtDet6: "查看子组统计参数表"
+  },
+  ja: {
+    mainTitle: "植物サインのアイトラッキング学術分析レポート",
+    hSec1: "実験概要", subSec1: "Overview",
+    txtIntro: "植物園の解説サインにおける「通読率の低さ」と「記憶定着の乏しさ」を解決すべく、本研究は福岡市植物園温室を対象に A/R/S 共創デザイン三原則（A: 啓発的導入、R: 読者関連性、S: 構造的明瞭性）を策定しました。2×2 被験者内交差実験（N=13名、計27試行）を通じて、従来型サイン（対照群：A1/B1）と A/R/S 対話型サイン（実験群：A2/B2）の視線再配分メカニズムを検証しました。",
+    hSec2: "データ概要", subSec2: "Data Summary",
+    cLbl1: "被験者規模", cLbl2: "本文注視比率", cLbl3: "初動10秒通読率", cLbl4: "サンプリング点と有効率",
+    vTitleA1: "A1: 従来型サイン (対照群)", vTitleA2: "A2: 対話型サイン (実験群)",
+    vTitleB1: "B1: 従来型サイン (対照群)", vTitleB2: "B2: 対話型サイン (実験群)",
+    txtSumTrials: "13名の全27試行詳細データを表示",
+    hSec3: "データ分析", subSec3: "Data Analysis",
+    tAAuditTitle: "1. A/R/S 原則体系と既存70サインの基準監査 (A/R/S Principles & Audit)",
+    tagAudit: "基準監査",
+    tAAuditRes: "Signage Annotator を用いて温室内の全70サイン（N=70）を監査した結果、既存サインにおいて A原則（啓発性）と R原則（読者関連性）が体系的に欠如していることを実証。",
+    tAAuditNote: "客観的評価：既存サインの多くは難解な専門用語の羅列に留まり、植物の特徴を読者の身体感覚に結びつける視点が不足していました。",
+    txtDetAudit: "A/R/S 原則の定義と監査詳細を表示",
+    tARshiftTitle: "2. 読者関連性 (R原則) 領域の注視躍進と効果分解 (Audience Relevance Shift)",
+    tagRshift: "主要決定要因",
+    tARshiftRes: "経験関連性領域（R領域）の初動10秒通読率は 5.0% から 21.4% へ急増し、総注視比率も 8.5% から 35.1% へ4倍以上躍進（全被験者で向上）。",
+    tARshiftNote: "客観的評価：効果分解により、R原則（身体・生活経験への錨定）が視線獲得と持続の決定要因であり、単なる言語的修辞（A原則）単独では注視維持が困難であることが判明しました。",
+    txtDetRshift: "R原則の注視躍進と効果分解データを表示",
+    tATextTitle: "3. 説明文注視比率 (Body Text Dwell Ratio)",
+    bTextSig: "有意差あり (p < 0.001 ***)",
+    tATextRes: "説明文エリアの注视比率は対照群の 44.34% から実験群の 18.09% へ減少（26.26% 削減、t(12) = -4.463, p < 0.001, Cohen's d = -1.238）。",
+    tATextNote: "客観的評価：レイアウト改善により長文への注視停留は削減されましたが、本文注視の低下が植物知識の記憶定着に与える影響については追加検証が必要です。",
+    txtDet1: "完全な推測統計パラメータを表示",
+    tAOrderTitle: "4. 閲覧順序と時系列 (Reading Order)",
+    tagOrder: "時系列記録",
+    tAOrderRes: "対照群は「写真 (6.1s) → 本文 (8.6s) → 見出し (33.7s)」；実験群は「写真 (4.5s) → 本文 (15.0s) → 吹き出し (15.7s) → アイコン (20.4s)」。",
+    tAOrderNote: "客観的評価：実験群で新設された吹き出し（0.64%）やアイコン群（2.14%）の注視比率は低く、初期に気づかれないケースも見られました。",
+    txtDet2: "各領域の到達時間 (TTFF) と順位詳細を表示",
+    tASwitchTitle: "5. 領域間切替頻度 (Switching Frequency)",
+    tagSwitch: "有意差なし (p = 0.908)",
+    tASwitchRes: "両群間の領域切替頻度に統計的有意差は認められませんでした（対照群 0.17 ± 0.26 vs 実験群 0.16 ± 0.18 回/秒, t(12) = -0.119, p = 0.9075）。",
+    tASwitchNote: "客観的評価：対話要素の追加によって視線の往復頻度が大きく変化することはなく、全体の遷移ペースは概ね一定でした。",
+    txtDet3: "切替統計パラメータを表示",
+    tASacTitle: "6. サッカード率と跳躍幅 (Saccade Dynamics)",
+    tagSac: "有意差なし (p > 0.05)",
+    tASacRes: "サッカード発生率（0.78 Hz vs 0.77 Hz, p = 0.9105）および平均跳躍振幅（74.60mm vs 62.92mm, p = 0.4571）ともに有意差はありませんでした。",
+    tASacNote: "客観的評価：実験群で平均跳躍距離が 11.68mm 短縮する傾向が見られたものの、被験者間分散が大きく有意水準には達していません（t = -0.768, p = 0.457）。",
+    txtDet4: "サッカード動態検定データを表示",
+    tAReTitle: "7. 再読・読み返し行動 (Re-reading Behavior)",
+    tagRe: "有意差なし (p = 0.421)",
+    tAReRes: "総注視時間に占める再読時間の割合に群間有意差は認められませんでした（対照群 38.04% ± 35.45% vs 実験群 32.85% ± 26.52%, t(12) = -0.834, p = 0.4205）。",
+    tAReNote: "客観的評価：再読に費やされた総時間は同等であり、対照群は本文内部、実験群はアイコンや吹き出しへの再確認が中心でした。",
+    txtDet5: "再読統計データを表示",
+    tAGrpTitle: "8. サブグループ別比較 (Group A vs Group B)",
+    tagGrp: "課題特性の差異",
+    tAGrpRes: "Group A（簡易サイン）では閲覧時間が短縮傾向（19.34s → 14.30s, p = 0.059）；Group B（詳細サイン）では逆に増加傾向（49.19s → 59.67s, p = 0.415）を示しました。",
+    tAGrpNote: "客観的評価：対話型デザインが常に閲覧時間を短縮するわけではなく、情報量の多いサインでは要素増加に伴い総閲覧時間が延びる側面が確認されました。",
+    txtDet6: "サブグループ別統計パラメータを表示"
+  },
+  en: {
+    mainTitle: "Eye Tracking Academic Analysis Report for Botanical Signs",
+    hSec1: "Overview", subSec1: "Overview",
+    txtIntro: "Addressing the dual deficits of low read-through rates and poor information retention in botanical gardens, this study formulated the A/R/S co-creation principles (A: Inspirational Atmosphere, R: Audience Relevance, S: Structural Clarity) in Fukuoka City Botanical Garden. A 2×2 counterbalanced eye-tracking study (N=13, 27 trials) evaluated visual attention reconstruction between traditional signs (Control: A1/B1) and A/R/S signs (Experiment: A2/B2).",
+    hSec2: "Data Summary", subSec2: "Data Summary",
+    cLbl1: "Participants", cLbl2: "Body Text Ratio", cLbl3: "Initial 10s Read-Through", cLbl4: "Total Points & Validity",
+    vTitleA1: "A1: Traditional Sign (Control)", vTitleA2: "A2: Interactive Sign (Experiment)",
+    vTitleB1: "B1: Traditional Sign (Control)", vTitleB2: "B2: Interactive Sign (Experiment)",
+    txtSumTrials: "View all 27-trial experimental database",
+    hSec3: "Data Analysis", subSec3: "Data Analysis",
+    tAAuditTitle: "1. A/R/S Principles & 70-Sign Baseline Audit",
+    tagAudit: "Baseline Audit",
+    tAAuditRes: "Auditing all 70 existing greenhouse signs (N=70) via Signage Annotator confirmed that principles A (Atmosphere) and R (Relevance) were systematically absent from the current signage corpus.",
+    tAAuditNote: "Neutral Evaluation: Existing signs relied on dense botanical taxonomy, lacking sensory linkages between plant features and visitors' everyday experiences.",
+    txtDetAudit: "View A/R/S definitions & audit details",
+    tARshiftTitle: "2. Audience Relevance (R Principle) Shift & Effect Decomposition",
+    tagRshift: "Key Determinant",
+    tARshiftRes: "The Audience Relevance region initial 10s reading rate rose from 5.0% to 21.4%, and full dwell time surged from 8.5% to 35.1% (>4x increase, upward trajectory across all participants).",
+    tARshiftNote: "Neutral Evaluation: Effect decomposition identified the R principle (experiential knowledge linkage) as the decisive variable; rhetorical framing (A principle) alone failed to sustain gaze, proving co-creation must prioritize experiential anchoring.",
+    txtDetRshift: "View R-principle surge & decomposition metrics",
+    tATextTitle: "3. Body Text Dwell Ratio",
+    bTextSig: "Significant (p < 0.001 ***)",
+    tATextRes: "Body text dwell ratio decreased significantly from 44.34% in Control to 18.09% in Experiment (-26.26%, t(12) = -4.463, p < 0.001, Cohen's d = -1.238).",
+    tATextNote: "Neutral Evaluation: While text dwell time was effectively reduced, whether this reduction compromises deeper botanical knowledge retention requires further evaluation with comprehension post-tests.",
+    txtDet1: "View complete statistical parameters",
+    tAOrderTitle: "4. Reading Order & Chronological Sequence",
+    tagOrder: "Chronological Sequence",
+    tAOrderRes: "Control sequence: Photo (6.1s) → Text (8.6s) → Title (33.7s); Experiment sequence: Photo (4.5s) → Text (15.0s) → Bubble (15.7s) → Icons (20.4s).",
+    tAOrderNote: "Neutral Evaluation: The newly introduced dialogue bubbles (0.64%) and bottom icons (2.14%) received relatively low dwell ratios, with some participants missing icons during initial inspection.",
+    txtDet2: "View TTFF and entry sequence details",
+    tASwitchTitle: "5. Switching Frequency",
+    tagSwitch: "Non-significant (p = 0.908)",
+    tASwitchRes: "No statistically significant difference was observed in inter-AOI switching rates (Control 0.17 ± 0.26 vs Experiment 0.16 ± 0.18 switches/s, t(12) = -0.119, p = 0.9075, d = -0.033).",
+    tASwitchNote: "Neutral Evaluation: Introducing interactive elements did not noticeably alter the overall frequency of visual transitions across regions.",
+    txtDet3: "View switching statistics",
+    tASacTitle: "6. Saccade Rate & Amplitude",
+    tagSac: "Non-significant (p > 0.05)",
+    tASacRes: "Neither saccade rate (0.78 Hz vs 0.77 Hz, p = 0.9105) nor mean amplitude (74.60mm vs 62.92mm, p = 0.4571) showed statistically significant differences between conditions.",
+    tASacNote: "Neutral Evaluation: Although the experimental group exhibited a numerical reduction of 11.68mm in saccade amplitude, intra-sample variance was high and did not achieve statistical significance (t = -0.768, p = 0.457).",
+    txtDet4: "View saccade kinematics test data",
+    tAReTitle: "7. Re-reading Behavior",
+    tagRe: "Non-significant (p = 0.421)",
+    tAReRes: "The proportion of dwell time spent revisiting AOIs showed no significant difference between conditions (Control 38.04% ± 35.45% vs Experiment 32.85% ± 26.52%, t(12) = -0.834, p = 0.4205).",
+    tAReNote: "Neutral Evaluation: Total revisit time investment was similar across formats, with Control revisits occurring inside body text and Experiment revisits distributed among icons and bubbles.",
+    txtDet5: "View re-reading test data",
+    tAGrpTitle: "8. Subgroup Comparison (Group A vs Group B)",
+    tagGrp: "Task Heterogeneity",
+    tAGrpRes: "Group A (simple signs) showed a shortening trend in duration (19.34s → 14.30s, p = 0.059), whereas Group B (detailed signs) showed an increasing trend (49.19s → 59.67s, p = 0.415).",
+    tAGrpNote: "Neutral Evaluation: Interactive layouts do not universally shorten viewing time; for information-dense signs, additional elements may increase total inspection duration.",
+    txtDet6: "View subgroup statistics table"
+  }
+};
+
+let currentLang = 'zh';
+
+const TRIALS_DATA = [
+  { id: "akama_kumiko", name: "Akama Kumiko", group: "A", img: "a1", cond: "control", dur: 15.66, pts: 925, valid: 93.19, rate: 59.06, cx: 0.7565, cy: 0.4411 },
+  { id: "akama_kumiko", name: "Akama Kumiko", group: "A", img: "a2", cond: "experiment", dur: 16.68, pts: 983, valid: 93.49, rate: 58.93, cx: 0.6334, cy: 0.5006 },
+  { id: "ataqi", name: "Ataqi", group: "A", img: "a1", cond: "control", dur: 16.80, pts: 820, valid: 92.93, rate: 48.82, cx: 0.6166, cy: 0.4704 },
+  { id: "ataqi", name: "Ataqi", group: "A", img: "a1", cond: "control", dur: 15.08, pts: 897, valid: 98.22, rate: 59.49, cx: 0.5446, cy: 0.5278 },
+  { id: "ataqi", name: "Ataqi", group: "A", img: "a2", cond: "experiment", dur: 10.18, pts: 602, valid: 93.36, rate: 59.15, cx: 0.6457, cy: 0.6156 },
+  { id: "harada_keiko", name: "Harada Keiko", group: "A", img: "a1", cond: "control", dur: 19.56, pts: 1156, valid: 96.97, rate: 59.10, cx: 0.4504, cy: 0.5945 },
+  { id: "harada_keiko", name: "Harada Keiko", group: "A", img: "a2", cond: "experiment", dur: 17.75, pts: 1046, valid: 99.62, rate: 58.95, cx: 0.4233, cy: 0.5244 },
+  { id: "kimura", name: "Kimura", group: "B", img: "b1", cond: "control", dur: 49.80, pts: 2966, valid: 53.44, rate: 59.56, cx: 0.5135, cy: 0.3299 },
+  { id: "kimura", name: "Kimura", group: "B", img: "b2", cond: "experiment", dur: 39.94, pts: 2374, valid: 56.78, rate: 59.43, cx: 0.4717, cy: 0.2747 },
+  { id: "koga_eiichi", name: "Koga Eiichi", group: "A", img: "a1", cond: "control", dur: 24.45, pts: 1456, valid: 87.77, rate: 59.56, cx: 0.5334, cy: 0.6965 },
+  { id: "koga_eiichi", name: "Koga Eiichi", group: "A", img: "a2", cond: "experiment", dur: 14.21, pts: 838, valid: 84.25, rate: 58.97, cx: 0.4717, cy: 0.7983 },
+  { id: "moro_izumi", name: "Moro Izumi", group: "A", img: "a1", cond: "control", dur: 14.95, pts: 868, valid: 98.62, rate: 58.07, cx: 0.3433, cy: 0.6704 },
+  { id: "moro_izumi", name: "Moro Izumi", group: "A", img: "a2", cond: "experiment", dur: 11.48, pts: 669, valid: 99.85, rate: 58.29, cx: 0.3364, cy: 0.6709 },
+  { id: "saku_yoshisuke", name: "Saku Yoshisuke", group: "A", img: "a1", cond: "control", dur: 28.65, pts: 1703, valid: 69.94, rate: 59.45, cx: 0.8186, cy: 0.8019 },
+  { id: "saku_yoshisuke", name: "Saku Yoshisuke", group: "A", img: "a2", cond: "experiment", dur: 25.41, pts: 1501, valid: 66.29, rate: 59.07, cx: 0.8437, cy: 0.8012 },
+  { id: "umetu_ayane", name: "Umetu Ayane", group: "B", img: "b1", cond: "control", dur: 60.39, pts: 2844, valid: 93.71, rate: 47.09, cx: 0.5991, cy: 0.7130 },
+  { id: "umetu_ayane", name: "Umetu Ayane", group: "B", img: "b2", cond: "experiment", dur: 102.63, pts: 2431, valid: 92.76, rate: 23.69, cx: 0.5488, cy: 0.5764 },
+  { id: "yamada_rena", name: "Yamada Rena", group: "A", img: "a1", cond: "control", dur: 25.75, pts: 1526, valid: 90.56, rate: 59.27, cx: 0.5208, cy: 0.5499 },
+  { id: "yamada_rena", name: "Yamada Rena", group: "A", img: "a2", cond: "experiment", dur: 20.29, pts: 1201, valid: 85.26, rate: 59.18, cx: 0.4974, cy: 0.5441 },
+  { id: "abcde", name: "Participant ABCDE", group: "B", img: "b1", cond: "control", dur: 29.25, pts: 1741, valid: 98.33, rate: 59.53, cx: 0.5967, cy: 0.5608 },
+  { id: "abcde", name: "Participant ABCDE", group: "B", img: "b2", cond: "experiment", dur: 73.71, pts: 4401, valid: 97.84, rate: 59.71, cx: 0.5706, cy: 0.6143 },
+  { id: "rep_chen", name: "Participant Rep (Chen)", group: "B", img: "b1", cond: "control", dur: 31.93, pts: 1905, valid: 99.06, rate: 59.67, cx: 0.4695, cy: 0.6096 },
+  { id: "rep_chen", name: "Participant Rep (Chen)", group: "B", img: "b2", cond: "experiment", dur: 46.34, pts: 2758, valid: 92.78, rate: 59.51, cx: 0.3658, cy: 0.6511 },
+  { id: "p186", name: "Participant 186", group: "B", img: "b1", cond: "control", dur: 67.00, pts: 3987, valid: 97.57, rate: 59.51, cx: 0.4521, cy: 0.5549 },
+  { id: "p186", name: "Participant 186", group: "B", img: "b2", cond: "experiment", dur: 49.35, pts: 2933, valid: 93.73, rate: 59.43, cx: 0.5774, cy: 0.5269 },
+  { id: "nonntixyan", name: "Participant Nonntixyan", group: "B", img: "b1", cond: "control", dur: 46.30, pts: 2760, valid: 99.38, rate: 59.61, cx: 0.4760, cy: 0.5532 },
+  { id: "nonntixyan", name: "Participant Nonntixyan", group: "B", img: "b2", cond: "experiment", dur: 30.18, pts: 1792, valid: 92.69, rate: 59.37, cx: 0.4177, cy: 0.5562 }
+];
+
+function populateParticipantTable() {
+  const tbody = document.getElementById('participant-tbody');
+  tbody.innerHTML = '';
+  TRIALS_DATA.forEach(row => {
+    const tr = document.createElement('tr');
+    const isExp = row.cond === 'experiment';
+    tr.innerHTML = `
+      <td><code>${row.id}</code></td>
+      <td><strong>${row.name}</strong></td>
+      <td>Group ${row.group}</td>
+      <td><code>${row.img.toUpperCase()}</code></td>
+      <td><span class="sig-badge" style="background: ${isExp ? '#e6f4ea' : '#f0f0f0'}; color: ${isExp ? '#137333' : '#444'}">${isExp ? '实验组' : '对照组'}</span></td>
+      <td>${row.dur.toFixed(1)}s</td>
+      <td>${row.pts}</td>
+      <td>${row.valid.toFixed(1)}%</td>
+      <td>${row.rate.toFixed(1)} Hz</td>
+      <td>(${row.cx.toFixed(3)}, ${row.cy.toFixed(3)})</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent.toLowerCase().includes(lang));
+  });
+
+  const t = I18N[lang];
+  document.getElementById('txt-main-title').textContent = t.mainTitle;
+  document.getElementById('h-sec-1').textContent = t.hSec1;
+  document.getElementById('sub-sec-1').textContent = t.subSec1;
+  document.getElementById('txt-intro').textContent = t.txtIntro;
+
+  document.getElementById('h-sec-2').textContent = t.hSec2;
+  document.getElementById('sub-sec-2').textContent = t.subSec2;
+  document.getElementById('c-lbl-1').textContent = t.cLbl1;
+  document.getElementById('c-lbl-2').textContent = t.cLbl2;
+  document.getElementById('c-lbl-3').textContent = t.cLbl3;
+  document.getElementById('c-lbl-4').textContent = t.cLbl4;
+  document.getElementById('txt-sum-trials').textContent = t.txtSumTrials;
+
+  document.getElementById('h-sec-3').textContent = t.hSec3;
+  document.getElementById('sub-sec-3').textContent = t.subSec3;
+
+  document.getElementById('t-a-audit-title').textContent = t.tAAuditTitle;
+  document.getElementById('tag-audit').textContent = t.tagAudit;
+  document.getElementById('t-a-audit-res').textContent = t.tAAuditRes;
+  document.getElementById('t-a-audit-note').textContent = t.tAAuditNote;
+  document.getElementById('txt-det-audit').textContent = t.txtDetAudit;
+
+  document.getElementById('t-a-rshift-title').textContent = t.tARshiftTitle;
+  document.getElementById('tag-rshift').textContent = t.tagRshift;
+  document.getElementById('t-a-rshift-res').textContent = t.tARshiftRes;
+  document.getElementById('t-a-rshift-note').textContent = t.tARshiftNote;
+  document.getElementById('txt-det-rshift').textContent = t.txtDetRshift;
+
+  document.getElementById('t-a-text-title').textContent = t.tATextTitle;
+  document.getElementById('b-text-sig').textContent = t.bTextSig;
+  document.getElementById('t-a-text-res').textContent = t.tATextRes;
+  document.getElementById('t-a-text-note').textContent = t.tATextNote;
+  document.getElementById('txt-det-1').textContent = t.txtDet1;
+
+  document.getElementById('t-a-order-title').textContent = t.tAOrderTitle;
+  document.getElementById('tag-order').textContent = t.tagOrder;
+  document.getElementById('t-a-order-res').textContent = t.tAOrderRes;
+  document.getElementById('t-a-order-note').textContent = t.tAOrderNote;
+  document.getElementById('txt-det-2').textContent = t.txtDet2;
+
+  document.getElementById('t-a-switch-title').textContent = t.tASwitchTitle;
+  document.getElementById('tag-switch').textContent = t.tagSwitch;
+  document.getElementById('t-a-switch-res').textContent = t.tASwitchRes;
+  document.getElementById('t-a-switch-note').textContent = t.tASwitchNote;
+  document.getElementById('txt-det-3').textContent = t.txtDet3;
+
+  document.getElementById('t-a-sac-title').textContent = t.tASacTitle;
+  document.getElementById('tag-sac').textContent = t.tagSac;
+  document.getElementById('t-a-sac-res').textContent = t.tASacRes;
+  document.getElementById('t-a-sac-note').textContent = t.tASacNote;
+  document.getElementById('txt-det-4').textContent = t.txtDet4;
+
+  document.getElementById('t-a-re-title').textContent = t.tAReTitle;
+  document.getElementById('tag-re').textContent = t.tagRe;
+  document.getElementById('t-a-re-res').textContent = t.tAReRes;
+  document.getElementById('t-a-re-note').textContent = t.tAReNote;
+  document.getElementById('txt-det-5').textContent = t.txtDet5;
+
+  document.getElementById('t-a-grp-title').textContent = t.tAGrpTitle;
+  document.getElementById('tag-grp').textContent = t.tagGrp;
+  document.getElementById('t-a-grp-res').textContent = t.tAGrpRes;
+  document.getElementById('t-a-grp-note').textContent = t.tAGrpNote;
+  document.getElementById('txt-det-6').textContent = t.txtDet6;
+
+  updateViewerTitles();
+}
+
+function switchViewer(group) {
+  document.getElementById('tab-a').classList.toggle('active', group === 'A');
+  document.getElementById('tab-b').classList.toggle('active', group === 'B');
+
+  const leftKey = group === 'A' ? 'a1' : 'b1';
+  const rightKey = group === 'A' ? 'a2' : 'b2';
+
+  document.getElementById('v-img-left').src = `outputs/heatmaps_group/${leftKey}_group_density.svg`;
+  document.getElementById('v-img-right').src = `outputs/heatmaps_group/${rightKey}_group_density.svg`;
+
+  updateViewerTitles();
+}
+
+function updateViewerTitles() {
+  const isGroupA = document.getElementById('tab-a').classList.contains('active');
+  const t = I18N[currentLang];
+  document.getElementById('v-title-left').textContent = isGroupA ? t.vTitleA1 : t.vTitleB1;
+  document.getElementById('v-title-right').textContent = isGroupA ? t.vTitleA2 : t.vTitleB2;
+}
+
+populateParticipantTable();
+setLang('zh');
+</script>
+
+</body>
+</html>

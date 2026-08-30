@@ -1,0 +1,14 @@
+{
+  "id": "s18-deep-analysis-cover",
+  "chapterId": "deep-analysis",
+  "layout": "cover",
+  "chapter": "5",
+  "chapterTitle": "深度分析",
+  "shortTitle": "深度分析",
+  "animation": "hero",
+  "legacyLayout": "SWISS-COVER-ASCII",
+  "legacyClass": "slide accent",
+  "assets": [],
+  "claims": [],
+  "markup": "<div class=\"canvas-card\" style=\"position:relative;\">\n    <canvas class=\"ascii-bg\" aria-hidden=\"true\"></canvas>\n    <div class=\"cover-layout\">\n      <div data-anim=\"kicker\" class=\"cover-author\">\n        <div>PHASE 05 · DEEP COGNITIVE ANALYSIS</div>\n        <div>SHANNON INFORMATION THEORY &amp; SURPRISAL MODEL</div>\n        <div>N = 13 PARTICIPANTS · 27 TRIALS · PAIRED EMPIRICAL VALIDATION</div>\n        <div>KYUSHU UNIVERSITY</div>\n      </div>\n      <h1 data-anim=\"title\" style=\"align-self:center;font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:52px;line-height:1.08;letter-spacing:0;color:#fff;max-width:20ch;text-align:center;hyphens:none\" data-i18n=\"slides.s18cover.title\">基于信息熵与惊讶度的深度认知分析<br/><span style=\"display:block;margin-top:1.8vh;font-size:24px;line-height:1.2;letter-spacing:0;font-weight:300;opacity:0.9\" data-i18n=\"slides.s18cover.desc\">超越表面注视时长假象 · 计算认知科学量化模型与全量实证</span></h1>\n      <div data-anim=\"bottom\" class=\"cover-bottom\">\n        <div class=\"cover-tags\">\n          <span class=\"cover-tag\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\"></rect><path d=\"M3 9h18M9 21V9\"></path></svg>SHANNON SURPRISAL</span>\n          <span class=\"cover-tag\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z\"></path><circle cx=\"12\" cy=\"12\" r=\"3\"></circle></svg>MARKOV FLOW</span>\n          <span class=\"cover-tag\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 3v18M5 6h11l3 3-3 3H5z\"></path></svg>E_GAIN (+127.7%)</span>\n        </div>\n        <div class=\"t-meta\" style=\"color:rgba(255,255,255,0.7);font-family:var(--mono);font-size:13px;letter-spacing:0.08em;font-weight:600\">\n          PHASE 05 / 06\n        </div>\n      </div>\n    </div>\n  </div>"
+}

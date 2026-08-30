@@ -1,0 +1,16 @@
+{
+  "id": "s18i4-chart-sge",
+  "chapterId": "deep-analysis",
+  "layout": "data",
+  "chapter": "5",
+  "chapterTitle": "深度分析",
+  "shortTitle": "阶段五：空间均衡度图解",
+  "animation": "statement-rise",
+  "legacyLayout": "S06",
+  "legacyClass": "slide",
+  "assets": [
+    "entropy-chart-sge"
+  ],
+  "claims": [],
+  "markup": "<div class=\"canvas-card analysis-data-slide\"><div class=\"chrome-min\"><div class=\"l\">PHASE 5 · EMPIRICAL CHARTS · SPATIAL GAZE STRUCTURE</div><div class=\"r\">31 / 37</div></div><div class=\"analysis-header-row\"><div class=\"analysis-header-left\"><h2 class=\"analysis-kicker\" data-i18n=\"slides.s18i4.title\">空间注视均衡度 (SGE) 与设计对齐 (KL 散度)</h2><div class=\"analysis-kicker-desc\" data-i18n=\"slides.s18i4.guide\">【图表D】量化视线空间离散度与共创设计预期的拟合收敛程度</div></div><div class=\"analysis-anim-badge\" aria-label=\"SGE Animation\"><span class=\"analysis-anim-label\">CHART D</span><svg width=\"116\" height=\"30\" viewBox=\"0 0 116 30\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"10\" y=\"10\" width=\"20\" height=\"15\" fill=\"#64748b\"/><rect x=\"40\" y=\"6\" width=\"20\" height=\"19\" fill=\"#059669\"/></svg></div></div><div class=\"analysis-body-group\" style=\"display:grid;grid-template-columns:1.3fr 1fr;gap:28px;align-items:center\"><div style=\"background:#fff;border:1px solid var(--border-subtle);border-radius:4px;padding:12px;display:flex;justify-content:center;align-items:center;height:500px\"><img src=\"asset:entropy-chart-sge\" alt=\"SGE Chart\" style=\"max-width:100%;max-height:100%;object-fit:contain\"></div><div style=\"display:flex;flex-direction:column;gap:20px\"><div style=\"background:#fff;border:1px solid var(--border-subtle);padding:26px 26px;border-radius:4px\"><span style=\"font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:700\" data-i18n=\"slides.s18i4.c1.tag\">SPATIAL GAZE ENTROPY</span><h4 style=\"font-size:22px;color:var(--ink);font-weight:600;margin:6px 0 10px\" data-i18n=\"slides.s18i4.c1.title\">空间注视均衡度 SGE: +66.9%</h4><p style=\"font-size:16.5px;color:var(--text-primary);line-height:1.65;margin:0\" data-i18n=\"slides.s18i4.c1.body\">1.203 → 2.008 bits (t=7.636, p&lt;0.0001)。证明视线不再单极化聚集在文本区，而是均匀覆盖了插图、花语和互动气泡。</p></div><div style=\"background:#fff;border:1px solid var(--border-subtle);border-left:4px solid var(--accent);padding:26px 26px;border-radius:4px\"><span style=\"font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:700\" data-i18n=\"slides.s18i4.c2.tag\">DESIGN CONVERGENCE</span><h4 style=\"font-size:22px;color:var(--ink);font-weight:600;margin:6px 0 10px\" data-i18n=\"slides.s18i4.c2.title\">KL 散度与设计预期对齐</h4><p style=\"font-size:16.5px;color:var(--text-primary);line-height:1.65;margin:0\" data-i18n=\"slides.s18i4.c2.body\">D_KL 量化了实际视线分布与工坊设计意图的匹配度，证实共创原则成功达成了预期的人机交互导流目标。</p></div></div></div></div>"
+}
