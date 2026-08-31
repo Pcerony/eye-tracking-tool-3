@@ -1,0 +1,14 @@
+{
+  "id": "s18a2-prior-llm-method",
+  "chapterId": "deep-analysis",
+  "layout": "data",
+  "chapter": "5",
+  "chapterTitle": "深度分析",
+  "shortTitle": "阶段五：AI测算先验概率",
+  "animation": "statement-rise",
+  "legacyLayout": "S06",
+  "legacyClass": "slide",
+  "assets": [],
+  "claims": [],
+  "markup": "<div class=\"canvas-card analysis-data-slide\"><div class=\"chrome-min\"><div class=\"l\">PHASE 5 · DEEP COGNITIVE ANALYSIS</div><div class=\"r\">21 / 38</div></div><div class=\"analysis-header-row\"><div class=\"analysis-header-left\"><h2 class=\"analysis-kicker\" data-i18n=\"slides.s18a2.title\">先验预期概率 P(x) 的 AI 测算机制</h2><div class=\"analysis-kicker-desc\" data-i18n=\"slides.s18a2.guide\">依托大语言模型（LLM）自回归概率预测原理，实现客观、秒级的新知意外度量化</div></div><div class=\"analysis-anim-badge\" aria-label=\"AI Probability Animation\"><span class=\"analysis-anim-label\">AI / LLM METHOD</span><svg width=\"116\" height=\"30\" viewBox=\"0 0 116 30\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M 10 15 Q 35 5 60 15 T 110 15\" stroke=\"var(--accent)\" stroke-width=\"2\" fill=\"none\" /><circle cx=\"60\" cy=\"15\" r=\"4\" fill=\"var(--accent)\" /></svg></div></div><div class=\"analysis-body-group\"><div class=\"hero-formula-wrap\"><div class=\"hero-formula\">P(x) = ∏ P_LLM( wₜ | w₁ ... wₜ₋₁ )</div></div><div class=\"clean-compare-grid\"><div class=\"clean-compare-col\"><span class=\"clean-compare-tag\" style=\"color:var(--accent)\" data-i18n=\"slides.s18a2.c1.tag\">LLM 概率建模原理</span><h4 style=\"font-size:20px;font-weight:600;color:var(--ink);margin:0\" data-i18n=\"slides.s18a2.c1.title\">大语言模型天然具备先验概率计算能力</h4><p style=\"font-size:15px;color:var(--text-primary);line-height:1.55;margin:0\" data-i18n=\"slides.s18a2.c1.body\">LLM 的工作原理本身即为自回归预测下一个词元的条件概率分布。海量语料预训练使其沉淀了人类普遍知识的先验基准，能够以极低计算成本秒级输出词与词之间的联结概率。</p></div><div class=\"clean-compare-col\"><span class=\"clean-compare-tag\" style=\"color:#16a34a\" data-i18n=\"slides.s18a2.c2.tag\">本实验中的 AI 应用</span><h4 style=\"font-size:20px;font-weight:600;color:var(--ink);margin:0\" data-i18n=\"slides.s18a2.c2.title\">实验标牌文本的 AI 客观快速标定</h4><p style=\"font-size:15px;color:var(--text-primary);line-height:1.55;margin:0\" data-i18n=\"slides.s18a2.c2.body\">本次实验两组文本的先验概率由 AI 自动测算生成：常识类表述“木质藤本”获得高概率（P=0.75），而反转语句“不是花瓣是苞片”呈现极低先验概率（P=0.12），客观量化了认知打破程度。</p></div></div><div style=\"padding-top:16px;border-top:1px solid var(--border-subtle)\"><p style=\"font-size:15px;color:var(--ink);line-height:1.45;margin:0\" data-i18n=\"slides.s18a2.summary\">传统方法难以客观测定受众心理预期，而 AI 的概率机制为信息熵加权提供了高效、可重复的客观计算底座。</p></div></div></div>"
+}

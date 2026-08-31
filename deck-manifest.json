@@ -808,6 +808,14 @@
       "claims": []
     },
     {
+      "id": "s18a2-prior-llm-method",
+      "chapterId": "deep-analysis",
+      "layout": "data",
+      "content": "src/content/slides/s18a2-prior-llm-method.json",
+      "assets": [],
+      "claims": []
+    },
+    {
       "id": "s18b-conventional-metrics",
       "chapterId": "deep-analysis",
       "layout": "data",
