@@ -804,9 +804,7 @@
       "chapterId": "deep-analysis",
       "layout": "data",
       "content": "src/content/slides/s18a-entropy-intro.json",
-      "assets": [
-        "entropy-fig-01-paradigm"
-      ],
+      "assets": [],
       "claims": []
     },
     {
@@ -814,9 +812,7 @@
       "chapterId": "deep-analysis",
       "layout": "data",
       "content": "src/content/slides/s18b-conventional-metrics.json",
-      "assets": [
-        "entropy-fig-02-metrics-flaw"
-      ],
+      "assets": [],
       "claims": []
     },
     {
@@ -824,9 +820,7 @@
       "chapterId": "deep-analysis",
       "layout": "data",
       "content": "src/content/slides/s18c-cognitive-friction.json",
-      "assets": [
-        "entropy-fig-03-friction"
-      ],
+      "assets": [],
       "claims": []
     },
     {
@@ -834,9 +828,7 @@
       "chapterId": "deep-analysis",
       "layout": "data",
       "content": "src/content/slides/s18d-surprisal-theory.json",
-      "assets": [
-        "entropy-fig-04-surprisal"
-      ],
+      "assets": [],
       "claims": []
     },
     {
@@ -844,9 +836,7 @@
       "chapterId": "deep-analysis",
       "layout": "data",
       "content": "src/content/slides/s18e-case-information-weight.json",
-      "assets": [
-        "entropy-fig-05-aoi-weights"
-      ],
+      "assets": [],
       "claims": []
     },
     {
@@ -854,9 +844,7 @@
       "chapterId": "deep-analysis",
       "layout": "data",
       "content": "src/content/slides/s18f-cognitive-gain-formula.json",
-      "assets": [
-        "entropy-fig-06-egain-walkthrough"
-      ],
+      "assets": [],
       "claims": []
     },
     {
@@ -864,9 +852,7 @@
       "chapterId": "deep-analysis",
       "layout": "data",
       "content": "src/content/slides/s18g-markov-stagnation.json",
-      "assets": [
-        "entropy-fig-07-markov-flow"
-      ],
+      "assets": [],
       "claims": []
     },
     {
@@ -874,9 +860,7 @@
       "chapterId": "deep-analysis",
       "layout": "data",
       "content": "src/content/slides/s18h-efficiency-ratio.json",
-      "assets": [
-        "entropy-fig-08-eta-efficiency"
-      ],
+      "assets": [],
       "claims": []
     },
     {
